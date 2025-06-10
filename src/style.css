@@ -1,0 +1,136 @@
+body { 
+    font-family: 'Inter', sans-serif; 
+}
+
+#chat-window::-webkit-scrollbar, 
+#history-list::-webkit-scrollbar { 
+    width: 6px; 
+}
+
+#chat-window::-webkit-scrollbar-track, 
+#history-list::-webkit-scrollbar-track { 
+    background: #f1f5f9; 
+}
+
+#chat-window::-webkit-scrollbar-thumb, 
+#history-list::-webkit-scrollbar-thumb { 
+    background: #d8b4fe; 
+    border-radius: 3px; 
+}
+
+#chat-window::-webkit-scrollbar-thumb:hover, 
+#history-list::-webkit-scrollbar-thumb:hover { 
+    background: #a855f7; 
+}
+
+.prose p { 
+    margin-bottom: 1rem; 
+} 
+
+.prose h1, 
+.prose h2, 
+.prose h3 { 
+    margin-top: 1.5em; 
+    margin-bottom: 0.5em; 
+} 
+
+.prose ul, 
+.prose ol { 
+    margin-left: 1.5rem; 
+    margin-bottom: 1rem; 
+} 
+
+.prose code { 
+    background-color: #f1f5f9; 
+    color: #1e293b; 
+    padding: 0.2em 0.4em; 
+    margin: 0; 
+    font-size: 85%; 
+    border-radius: 3px; 
+} 
+
+.prose pre { 
+    background-color: #1e293b; 
+    color: #e2e8f0; 
+    padding: 1rem; 
+    border-radius: 0.5rem; 
+    overflow-x: auto; 
+}
+
+@keyframes fadeInUp { 
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    } 
+}
+
+.message-appear { 
+    animation: fadeInUp 0.4s ease-out forwards; 
+}
+
+@keyframes typing-dot { 
+    0% { 
+        transform: translateY(0); 
+    } 
+    20% { 
+        transform: translateY(-5px); 
+    } 
+    40% { 
+        transform: translateY(0); 
+    } 
+    100% { 
+        transform: translateY(0); 
+    } 
+}
+
+.typing-dot { 
+    animation: typing-dot 1.5s infinite ease-in-out; 
+} 
+
+.typing-dot:nth-child(2) { 
+    animation-delay: 0.2s; 
+} 
+
+.typing-dot:nth-child(3) { 
+    animation-delay: 0.4s; 
+}
+
+.dragging { 
+    opacity: 0.4; 
+    background: #e9d5ff; 
+} 
+
+.drag-over-item { 
+    border-top: 2px solid #9333ea; 
+    background: #e9d5ff; 
+}
+
+.history-item, 
+.options-btn, 
+#new-chat-btn, 
+#send-btn, 
+#interaction-mode-select { 
+    transition: all 0.2s ease-in-out; 
+}
+
+#context-menu, 
+#user-menu-dropdown { 
+    transition: opacity 0.15s ease-out, transform 0.15s ease-out; 
+}
+
+#user-menu-dropdown::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
