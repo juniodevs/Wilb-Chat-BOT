@@ -52,23 +52,6 @@ app.get('/api/info', (req, res) => {
     });
 });
 
-// Rota para configurações do cliente
-app.get('/api/config', (req, res) => {
-    res.json({
-        firebase: {
-            apiKey: process.env.FIREBASE_API_KEY,
-            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-            appId: process.env.FIREBASE_APP_ID
-        },
-        gemini: {
-            apiKey: process.env.GEMINI_API_KEY
-        }
-    });
-});
-
 // Rota para proxy da API do Gemini (opcional, para maior segurança)
 app.post('/api/gemini/generate', async (req, res) => {
     try {
@@ -88,14 +71,12 @@ app.post('/api/gemini/generate', async (req, res) => {
     }
 });
 
-// Rota para estatísticas (exemplo de API adicional)
-app.get('/api/stats', (req, res) => {
-    res.json({
-        totalUsers: 1250,
-        totalChats: 8430,
-        totalMessages: 45670,
-        uptime: process.uptime(),
-        memoryUsage: process.memoryUsage()
+// Middleware para rotas de API inexistentes (404)
+app.use('/api', (req, res, next) => {
+    res.status(404).json({
+        success: false,
+        error: 'API não encontrada',
+        message: `A rota ${req.originalUrl} não existe.`
     });
 });
 

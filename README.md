@@ -12,6 +12,31 @@ Um assistente de estudos inteligente construído com Vite, Node.js, Express e in
 - **Upload de imagens**: Análise de imagens pela IA
 - **Histórico persistente**: Salvo no Firestore ou localStorage
 
+## 🛣️ Roadmap
+- [x] Configuração inicial do projeto com Vite e Node.js
+- [x] Integração com Firebase Auth
+- [x] Implementação de APIs básicas (status, info, config, stats)
+- [x] Integração com Google Gemini API
+- [x] Implementação de upload de imagens
+- [x] Criação de interface com Tailwind CSS
+- [x] Implementação de histórico de perguntas e respostas
+- [x] Implementação de modos de estudo (exercícios, dicas, explicações)
+
+- Apartir daqui, o projeto está nas mãos de quem quiser contribuir!
+
+- [X] Implementar Sons e Animações
+- [ ] Responsividade total para dispositivos móveis
+- [ ] Melhorias na interface e usabilidade
+- [ ] Adição de testes unitários e de integração
+- [ ] Documentação completa do código
+- [ ] Implementação de autenticação avançada (email/senha, etc.)
+- [ ] Otimização de performance e segurança
+- [ ] Implementação de notificações em tempo real
+- [ ] Suporte a múltiplos idiomas
+- [ ] Implementação de um painel administrativo
+- [ ] Melhoria na análise de imagens com IA
+- [ ] Implementação de um sistema de feedback dos usuários
+
 ## 📦 Instalação
 
 1. Clone ou extraia o projeto
@@ -66,9 +91,7 @@ assistente-estudos-vite/
 
 - `GET /api/health` - Status do servidor
 - `GET /api/info` - Informações do sistema
-- `GET /api/config` - Configurações do cliente
 - `GET /api/stats` - Estatísticas de uso
-- `POST /api/gemini/generate` - Proxy para API Gemini (opcional)
 
 ## 🌐 Tecnologias Utilizadas
 
