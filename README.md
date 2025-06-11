@@ -24,7 +24,7 @@ Um assistente de estudos inteligente construído com Vite, Node.js, Express e in
 
 - Apartir daqui, o projeto está nas mãos de quem quiser contribuir!
 - [ ] Correção de Segurança e Bugs
-- [ ] Implementação de um sistema de cache para respostas da IA
+- [X] Implementação de um sistema de cache para respostas da IA
 - [ ] Implementar Sons e Animações
 - [ ] Responsividade total para dispositivos móveis
 - [ ] Melhorias na interface e usabilidade
