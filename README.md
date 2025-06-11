@@ -23,8 +23,9 @@ Um assistente de estudos inteligente construído com Vite, Node.js, Express e in
 - [x] Implementação de modos de estudo (exercícios, dicas, explicações)
 
 - Apartir daqui, o projeto está nas mãos de quem quiser contribuir!
-
-- [X] Implementar Sons e Animações
+- [ ] Correção de Segurança e Bugs
+- [ ] Implementação de um sistema de cache para respostas da IA
+- [ ] Implementar Sons e Animações
 - [ ] Responsividade total para dispositivos móveis
 - [ ] Melhorias na interface e usabilidade
 - [ ] Adição de testes unitários e de integração
@@ -73,14 +74,14 @@ npm start
 
 ```
 assistente-estudos-vite/
-├── src/                    # Código fonte do frontend
-│   ├── main.js            # JavaScript principal
-│   └── style.css          # Estilos CSS
-├── server/                # Servidor Express
-│   └── index.js          # Servidor principal
-├── public/                # Arquivos estáticos (imagens, fontes, etc.)
-│   ├── images/           # Imagens do projeto
-├── dist/                 # Build de produção (gerado)
+├── src/                 # Código fonte do frontend
+│   ├── main.js          # JavaScript principal
+│   └── style.css        # Estilos CSS
+├── server/              # Servidor Express
+│   └── index.js         # Servidor principal
+├── public/              # Arquivos estáticos (imagens, fontes, etc.)
+│   ├── images/          # Imagens do projeto
+├── dist/                # Build de produção (gerado)
 ├── index.html           # HTML principal
 ├── vite.config.js       # Configuração do Vite
 ├── package.json         # Dependências e scripts
