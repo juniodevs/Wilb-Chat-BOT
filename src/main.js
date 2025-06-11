@@ -38,8 +38,7 @@ async function initializeFirebase() {
 function afterFirebaseInit(firebaseFns) {
     const { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = firebaseFns;
 
-    // --- DOM Elements & Config ---
-    const appContainer = document.getElementById('app-container');
+    // --- DOM Elements ---
     const loginModal = document.getElementById('login-modal');
     const loginGoogleBtn = document.getElementById('login-google-btn');
     const loginAnonBtn = document.getElementById('login-anon-btn');
@@ -68,10 +67,12 @@ function afterFirebaseInit(firebaseFns) {
     const contextMenu = document.getElementById('context-menu');
     const menuToggleBtn = document.getElementById('menu-toggle-btn');
     const historyOverlay = document.getElementById('history-overlay');
+    const closeLoginModalBtn = document.getElementById('close-login-modal-btn');
 
-    const WILB_IMAGE_URL = '/images/WilbAvatar.png'; // URL do avatar do Wilb
-    const WILB_IMAGE_URL_ANON = '/images/WilbAvatarAnon.png'; // URL do avatar anônimo
-
+    // --- Constants ---
+    const WILB_IMAGE_URL = '/images/WilbAvatar.png';
+    const WILB_IMAGE_URL_ANON = '/images/WilbAvatarAnon.png';
+    const DEFAULT_AVATAR_URL = WILB_IMAGE_URL_ANON;
 
     // --- State ---
     let currentUser = null;
@@ -79,25 +80,100 @@ function afterFirebaseInit(firebaseFns) {
     let currentChatId = null;
     let historyData = [];
     let currentMessages = [];
-    let contextTargetId = null; 
-    let draggedItemId = null;
+    let contextTargetId = null;
     let unsubscribeHistory = null;
 
-    const WILB_PERSONALITY = "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL:";
-
-    const PROMPTS = {
-        ajuda: `${WILB_PERSONALITY} PAPEL: Você é um tutor didático que ajuda com exercícios sem dar respostas diretas. Guie o aluno através de perguntas e dicas para que ele chegue à resposta sozinho. Seja paciente e encorajador.`,
-        dicas: `${WILB_PERSONALITY} PAPEL: Você é um conselheiro de estudos que oferece técnicas de aprendizagem, organização e motivação. Foque em métodos práticos e personalizados para melhorar o desempenho acadêmico.`,
-        resposta_direta: `${WILB_PERSONALITY} PAPEL: Você é uma enciclopédia precisa que fornece respostas diretas e objetivas. Seja claro, conciso e factual, mas mantenha o tom amigável.`,
-        explicacao_profunda: `${WILB_PERSONALITY} PAPEL: Você é um especialista apaixonado que explica conceitos em detalhes. Use analogias, exemplos práticos e quebre tópicos complexos em partes digestíveis.`,
-        correcao: `${WILB_PERSONALITY} PAPEL: Você é um professor de redação que corrige textos com cuidado. Aponte erros gramaticais, sugira melhorias de estilo e explique as correções de forma educativa.`
+    // Cache local para perguntas frequentes
+    const localCache = {
+        responses: new Map(),
+        maxSize: 50,
+        
+        generateKey(prompt, mode) {
+            return `${mode}:${prompt.trim().toLowerCase()}`;
+        },
+        
+        get(prompt, mode) {
+            const key = this.generateKey(prompt, mode);
+            return this.responses.get(key);
+        },
+        
+        set(prompt, mode, response) {
+            const key = this.generateKey(prompt, mode);
+            
+            // Remove o mais antigo se atingir o limite
+            if (this.responses.size >= this.maxSize) {
+                const firstKey = this.responses.keys().next().value;
+                this.responses.delete(firstKey);
+            }
+            
+            this.responses.set(key, {
+                response,
+                timestamp: Date.now()
+            });
+        },
+        
+        clear() {
+            this.responses.clear();
+        }
     };
 
-    // --- Functions ---
+    // --- Utility Functions ---
     const scrollToBottom = () => chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
 
     const showWelcomeMessage = () => {
-         chatWindow.innerHTML = `<div class="flex items-start gap-3 justify-start mb-6 message-appear"><img src="${WILB_IMAGE_URL}" alt="Ícone do Wilb" class="w-10 h-10 rounded-full bg-slate-200"><div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose"><p>Oi! Eu sou o Wilb, seu companheiro de estudos 💜✨</p><p>Vamos arrasar juntos?</p></div></div>`;
+        chatWindow.innerHTML = `
+            <div class="flex items-start gap-3 justify-start mb-6 message-appear">
+                <img src="${WILB_IMAGE_URL}" alt="Ícone do Wilb" class="w-10 h-10 rounded-full bg-slate-200">
+                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">
+                    <p>Oi! Eu sou o Wilb, seu companheiro de estudos 💜✨</p>
+                    <p>Vamos arrasar juntos?</p>
+                </div>
+            </div>`;
+    };
+
+    const showEmptyChatMessage = () => {
+        chatWindow.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-center text-slate-500 message-appear">
+                <i class="fa-regular fa-comments text-5xl mb-4"></i>
+                <h3 class="text-lg font-semibold">Este chat está vazio.</h3>
+                <p class="text-sm">Envie uma mensagem ou uma imagem para começar a conversa.</p>
+            </div>`;
+    };
+
+    const updateSendButtonState = () => {
+        sendBtn.disabled = !(messageInput.value.trim() || imageBase64);
+    };
+
+    // --- UI Functions ---
+    const updateUIForUser = (user) => {
+        if (user) {
+            loginModal.style.display = 'none';
+
+            if (user.isAnonymous) {
+                userMenuButton.classList.add('hidden');
+                headerLoginBtn.classList.remove('hidden');
+                headerLoginBtn.classList.add('flex');
+                anonWarning.classList.remove('hidden');
+            } else {
+                userMenuButton.classList.remove('hidden');
+                userMenuButton.classList.add('flex');
+                headerLoginBtn.classList.add('hidden');
+                anonWarning.classList.add('hidden');
+                
+                const userPhoto = user.photoURL || DEFAULT_AVATAR_URL;
+                userPhotoEl.src = userPhoto;
+                dropdownUserPhoto.src = userPhoto;
+                dropdownUserName.textContent = user.displayName || 'Usuário';
+                dropdownUserEmail.textContent = user.email || 'Não disponível';
+            }
+        } else {
+            loginModal.style.display = 'flex';
+            userMenuButton.classList.add('hidden');
+            userMenuButton.classList.remove('flex');
+            anonWarning.classList.add('hidden');
+            headerLoginBtn.classList.remove('hidden');
+            headerLoginBtn.classList.add('flex');
+        }
     };
 
     const renderHistory = () => {
@@ -105,11 +181,10 @@ function afterFirebaseInit(firebaseFns) {
         const displayHistory = [...historyData].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
         if (displayHistory.length === 0) {
-            if(currentUser && !currentUser.isAnonymous) {
-                 historyList.innerHTML = `<div class="text-center text-sm text-slate-500 mt-4 px-2">Seu histórico aparecerá aqui.</div>`;
-            } else if (currentUser && currentUser.isAnonymous) {
-                 historyList.innerHTML = `<div class="text-center text-sm text-slate-500 mt-4 px-2">Seu histórico não é salvo no modo anônimo.</div>`;
-            }
+            const message = currentUser?.isAnonymous 
+                ? 'Seu histórico não é salvo no modo anônimo.'
+                : 'Seu histórico aparecerá aqui.';
+            historyList.innerHTML = `<div class="text-center text-sm text-slate-500 mt-4 px-2">${message}</div>`;
             return;
         }
 
@@ -153,48 +228,7 @@ function afterFirebaseInit(firebaseFns) {
         });
     };
 
-    const closeLoginModalBtn = document.getElementById('close-login-modal-btn');
-    if (closeLoginModalBtn) {
-        closeLoginModalBtn.addEventListener('click', () => {
-            loginModal.style.display = 'none';
-        });
-    }
-
-    const updateUIForUser = (user) => {
-
-        if (user) {
-            // --- USUÁRIO LOGADO ---
-            loginModal.style.display = 'none';
-
-            if (user.isAnonymous) {
-                userMenuButton.classList.add('hidden');
-                headerLoginBtn.classList.remove('hidden');
-                headerLoginBtn.classList.add('flex');
-                anonWarning.classList.remove('hidden');
-            } else {
-                userMenuButton.classList.remove('hidden');
-                userMenuButton.classList.add('flex');
-                headerLoginBtn.classList.add('hidden');
-                anonWarning.classList.add('hidden');
-                
-                const userPhoto = user.photoURL || DEFAULT_AVATAR_URL;
-                userPhotoEl.src = userPhoto;
-                dropdownUserPhoto.src = userPhoto;
-                dropdownUserName.textContent = user.displayName || 'Usuário';
-                dropdownUserEmail.textContent = user.email || 'Não disponível';
-            }
-        } else {
-            // --- USUÁRIO DESLOGADO ---
-            loginModal.style.display = 'flex';
-
-            userMenuButton.classList.add('hidden');
-            userMenuButton.classList.remove('flex');
-            anonWarning.classList.add('hidden');
-            headerLoginBtn.classList.remove('hidden');
-            headerLoginBtn.classList.add('flex');
-        }
-    };
-
+    // --- State Management ---
     const resetAppState = () => {
         if (unsubscribeHistory) unsubscribeHistory();
         unsubscribeHistory = null;
@@ -216,7 +250,7 @@ function afterFirebaseInit(firebaseFns) {
             historyData = localHistory ? JSON.parse(localHistory) : [];
             renderHistory();
             return;
-        };
+        }
 
         const chatsRef = collection(db, "users", currentUser.uid, "chats");
         const q = query(chatsRef, orderBy("createdAt", "desc"));
@@ -226,10 +260,11 @@ function afterFirebaseInit(firebaseFns) {
             renderHistory();
         }, (error) => {
             console.error("Error loading history:", error);
-            historyList.innerHTML = `<div class="p-4 text-center text-sm text-red-700 bg-red-100 rounded-lg">
-                <p class="font-bold mb-2">Erro ao carregar o histórico!</p>
-                <p>Verifique se as <strong class="underline">Regras de Segurança</strong> do seu banco de dados Firestore estão configuradas corretamente.</p>
-            </div>`;
+            historyList.innerHTML = `
+                <div class="p-4 text-center text-sm text-red-700 bg-red-100 rounded-lg">
+                    <p class="font-bold mb-2">Erro ao carregar o histórico!</p>
+                    <p>Verifique se as <strong class="underline">Regras de Segurança</strong> do seu banco de dados Firestore estão configuradas corretamente.</p>
+                </div>`;
         });
     };
 
@@ -243,6 +278,22 @@ function afterFirebaseInit(firebaseFns) {
         renderHistory();
     };
 
+    const loadChat = (chatId) => {
+        const result = historyData.find(c => c.id === chatId);
+        if (result) {
+            currentChatId = chatId;
+            currentMessages = result.messages || [];
+            chatWindow.innerHTML = '';
+            if (currentMessages.length > 0) {
+                currentMessages.forEach(msg => displayMessage(msg));
+            } else {
+                showEmptyChatMessage();
+            }
+            renderHistory();
+        }
+    };
+
+    // --- Authentication ---
     const handleSignOut = async () => {
         const isAnon = currentUser?.isAnonymous;
         if (isAnon) {
@@ -274,23 +325,7 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    onAuthStateChanged(auth, async (user) => {
-        currentUser = user;
-        updateUIForUser(user);
-        
-        if (user) {
-            if (user.isAnonymous) {
-                localStorage.setItem('anonymousUid', user.uid);
-            } else {
-                localStorage.removeItem('anonymousUid');
-            }
-            loadHistoryFromFirestore();
-            startNewChat();
-        } else {
-            resetAppState();
-        }
-    });
-
+    // --- Image Handling ---
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -311,100 +346,13 @@ function afterFirebaseInit(firebaseFns) {
         updateSendButtonState();
     };
 
-    const updateSendButtonState = () => {
-        sendBtn.disabled = !(messageInput.value.trim() || imageBase64);
-    };
-
-    const showEmptyChatMessage = () => {
-        chatWindow.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center text-slate-500 message-appear">
-            <i class="fa-regular fa-comments text-5xl mb-4"></i>
-            <h3 class="text-lg font-semibold">Este chat está vazio.</h3>
-            <p class="text-sm">Envie uma mensagem ou uma imagem para começar a conversa.</p>
-        </div>`;
-    };
-
-    const loadChat = (chatId) => {
-        const result = historyData.find(c => c.id === chatId);
-        if (result) {
-            currentChatId = chatId;
-            currentMessages = result.messages || [];
-            chatWindow.innerHTML = '';
-            if (currentMessages.length > 0) {
-                currentMessages.forEach(msg => displayMessage(msg));
-            } else {
-                showEmptyChatMessage();
-            }
-            renderHistory();
-        }
-    };
-
-    const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
-        const currentMode = modeSelect.value;
-        const payload = {
-            conversationHistory,
-            prompt: newText,
-            image: newBase64ImageData,
-            mode: currentMode
-        };
-        const response = await fetch('/api/gemini/generate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error("API Error Response Body:", errorBody);
-            throw new Error(`API request failed with status ${response.status}`);
-        }
-        const result = await response.json();
-        if (result && result.response) {
-            return result.response;
-        } else {
-            return "Não consegui gerar uma resposta.";
-        }
-    };
-
-    const createNewChat = async (title, messages) => {
-        if(!currentUser) return;
-        
-        const messagesToStore = messages.map(msg => ({ sender: msg.sender, text: msg.text, hasImage: msg.hasImage || false }));
-        
-        if(currentUser.isAnonymous) {
-            const newChat = { id: `chat_${Date.now()}`, title, messages: messagesToStore, pinned: false, createdAt: new Date().toISOString() };
-            historyData.unshift(newChat);
-            localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
-            currentChatId = newChat.id;
-            renderHistory();
-        } else {
-             const docRef = await addDoc(collection(db, "users", currentUser.uid, "chats"), { title, messages: messagesToStore, pinned: false, createdAt: serverTimestamp() });
-            currentChatId = docRef.id;
-        }
-    };
-
-    const updateChat = async (chatId, messages) => {
-        if(!currentUser) return;
-        
-        const messagesToStore = messages.map(msg => ({ sender: msg.sender, text: msg.text, hasImage: msg.hasImage || false }));
-        
-        if (currentUser.isAnonymous) {
-            const chatIndex = historyData.findIndex(c => c.id === chatId);
-            if(chatIndex > -1) {
-                historyData[chatIndex].messages = messagesToStore;
-                localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
-            }
-        } else {
-            const chatDocRef = doc(db, "users", currentUser.uid, "chats", chatId);
-            await updateDoc(chatDocRef, { messages: messagesToStore });
-        }
-    };
-
+    // --- Message Handling ---
     const displayMessage = (message) => {
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex items-start gap-3 mb-6 message-appear ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`;
 
         if (message.sender === 'user') {
             const userAvatarUrl = currentUser?.photoURL || WILB_IMAGE_URL_ANON;
-
             messageDiv.innerHTML = `
                 <div class="bg-purple-600 text-white p-4 rounded-lg shadow-sm max-w-lg">
                     ${message.imageUrl ? `<img src="${message.imageUrl}" alt="Imagem enviada" class="rounded-lg mb-2 max-w-full h-auto">` : ''}
@@ -446,12 +394,126 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
+    // --- API Communication ---
+    const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
+        const currentMode = modeSelect.value;
+        
+        // Verifica cache local primeiro (apenas para texto sem imagem)
+        if (!newBase64ImageData) {
+            const cached = localCache.get(newText, currentMode);
+            if (cached) {
+                console.log('Resposta encontrada no cache local');
+                return cached.response;
+            }
+        }
+
+        const payload = {
+            conversationHistory,
+            prompt: newText,
+            image: newBase64ImageData,
+            mode: currentMode
+        };
+        
+        const response = await fetch('/api/gemini/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error("API Error Response Body:", errorBody);
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        if (result && result.response) {
+            // Salva no cache local se não tem imagem
+            if (!newBase64ImageData) {
+                localCache.set(newText, currentMode, result.response);
+            }
+            
+            // Log se veio do cache do servidor
+            if (result.cached) {
+                console.log('Resposta veio do cache do servidor');
+            }
+            
+            return result.response;
+        }
+        
+        return "Não consegui gerar uma resposta.";
+    };
+
+    // --- Chat Management ---
+    const createNewChat = async (title, messages) => {
+        if (!currentUser) return;
+        
+        const messagesToStore = messages.map(msg => ({ 
+            sender: msg.sender, 
+            text: msg.text, 
+            hasImage: msg.hasImage || false 
+        }));
+        
+        if (currentUser.isAnonymous) {
+            const newChat = { 
+                id: `chat_${Date.now()}`, 
+                title, 
+                messages: messagesToStore, 
+                pinned: false, 
+                createdAt: new Date().toISOString() 
+            };
+            historyData.unshift(newChat);
+            localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
+            currentChatId = newChat.id;
+            renderHistory();
+        } else {
+            const docRef = await addDoc(collection(db, "users", currentUser.uid, "chats"), { 
+                title, 
+                messages: messagesToStore, 
+                pinned: false, 
+                createdAt: serverTimestamp() 
+            });
+            currentChatId = docRef.id;
+        }
+    };
+
+    const updateChat = async (chatId, messages) => {
+        if (!currentUser) return;
+        
+        const messagesToStore = messages.map(msg => ({ 
+            sender: msg.sender, 
+            text: msg.text, 
+            hasImage: msg.hasImage || false 
+        }));
+        
+        if (currentUser.isAnonymous) {
+            const chatIndex = historyData.findIndex(c => c.id === chatId);
+            if (chatIndex > -1) {
+                historyData[chatIndex].messages = messagesToStore;
+                localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
+            }
+        } else {
+            const chatDocRef = doc(db, "users", currentUser.uid, "chats", chatId);
+            await updateDoc(chatDocRef, { messages: messagesToStore });
+        }
+    };
+
     const handleSendMessage = async () => {
         const userText = messageInput.value.trim();
         if (!userText && !imageBase64) return;
-        if (chatWindow.querySelector('.prose') || chatWindow.querySelector('.fa-comments')) chatWindow.innerHTML = '';
         
-        const messageForDisplay = { sender: 'user', text: userText, imageUrl: imageBase64 ? imagePreview.src : null, hasImage: !!imageBase64 };
+        if (chatWindow.querySelector('.prose') || chatWindow.querySelector('.fa-comments')) {
+            chatWindow.innerHTML = '';
+        }
+        
+        const messageForDisplay = { 
+            sender: 'user', 
+            text: userText, 
+            imageUrl: imageBase64 ? imagePreview.src : null, 
+            hasImage: !!imageBase64 
+        };
+        
         const historyForApi = [...currentMessages];
         currentMessages.push(messageForDisplay);
         displayMessage(messageForDisplay);
@@ -480,13 +542,16 @@ function afterFirebaseInit(firebaseFns) {
         } catch (error) {
             removeTypingIndicator();
             console.error('Erro ao obter resposta:', error);
-            const errorMessage = { sender: 'assistant', text: 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.' };
+            const errorMessage = { 
+                sender: 'assistant', 
+                text: 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.' 
+            };
             currentMessages.push(errorMessage);
             displayMessage(errorMessage);
         }
     };
 
-    // Função para renomear chat
+    // --- Chat History Management ---
     const exitRenameMode = async (chatId, newTitle) => {
         const chatIndex = historyData.findIndex(c => c.id === chatId);
         if (chatIndex === -1) return;
@@ -511,7 +576,6 @@ function afterFirebaseInit(firebaseFns) {
         renderHistory();
     };
 
-    // Função para deletar chat
     const deleteChat = async (chatId) => {
         if (!confirm('Tem certeza que deseja excluir este chat?')) return;
         
@@ -533,7 +597,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // Função para fixar/desfixar chat
     const togglePinChat = async (chatId) => {
         const chatIndex = historyData.findIndex(c => c.id === chatId);
         if (chatIndex === -1) return;
@@ -553,17 +616,44 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // Event Listeners
+    // --- Event Listeners ---
+    onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        updateUIForUser(user);
+        
+        if (user) {
+            if (user.isAnonymous) {
+                localStorage.setItem('anonymousUid', user.uid);
+            } else {
+                localStorage.removeItem('anonymousUid');
+            }
+            loadHistoryFromFirestore();
+            startNewChat();
+        } else {
+            resetAppState();
+        }
+    });
+
+    // Login/Logout events
+    if (closeLoginModalBtn) {
+        closeLoginModalBtn.addEventListener('click', () => {
+            loginModal.style.display = 'none';
+        });
+    }
+
     headerLoginBtn.addEventListener('click', () => {
         loginModal.style.display = 'flex';
     });
+    
     loginFromWarning.addEventListener('click', () => {
         loginModal.style.display = 'flex';
     });
+    
     loginGoogleBtn.addEventListener('click', signInWithGoogle);
     loginAnonBtn.addEventListener('click', signInAnonymouslyFlow);
     logoutBtn.addEventListener('click', handleSignOut);
 
+    // Chat events
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         handleSendMessage();
@@ -579,7 +669,6 @@ function afterFirebaseInit(firebaseFns) {
 
     imageUploadInput.addEventListener('change', handleImageUpload);
     removeImageBtn.addEventListener('click', removeImage);
-
     newChatBtn.addEventListener('click', startNewChat);
 
     // User menu dropdown

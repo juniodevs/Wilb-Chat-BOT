@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 
 // Configurar variáveis de ambiente
 dotenv.config();
@@ -12,6 +13,80 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Sistema de Cache em Memória
+class ResponseCache {
+    constructor(maxSize = 1000, ttl = 3600000) { // TTL padrão: 1 hora
+        this.cache = new Map();
+        this.maxSize = maxSize;
+        this.ttl = ttl;
+    }
+
+    // Gera uma chave única baseada no conteúdo da requisição
+    generateKey(prompt, mode, conversationHistory, hasImage) {
+        const content = {
+            prompt: prompt?.trim(),
+            mode,
+            historyLength: conversationHistory?.length || 0,
+            hasImage: !!hasImage
+        };
+        return crypto.createHash('md5').update(JSON.stringify(content)).digest('hex');
+    }
+
+    get(key) {
+        const item = this.cache.get(key);
+        if (!item) return null;
+        
+        // Verifica se o item expirou
+        if (Date.now() > item.expiry) {
+            this.cache.delete(key);
+            return null;
+        }
+        
+        // Move para o final (LRU)
+        this.cache.delete(key);
+        this.cache.set(key, item);
+        return item.data;
+    }
+
+    set(key, data) {
+        // Remove itens antigos se atingir o limite
+        if (this.cache.size >= this.maxSize) {
+            const firstKey = this.cache.keys().next().value;
+            this.cache.delete(firstKey);
+        }
+
+        this.cache.set(key, {
+            data,
+            expiry: Date.now() + this.ttl,
+            timestamp: Date.now()
+        });
+    }
+
+    clear() {
+        this.cache.clear();
+    }
+
+    getStats() {
+        return {
+            size: this.cache.size,
+            maxSize: this.maxSize,
+            ttl: this.ttl
+        };
+    }
+}
+
+// Instância do cache
+const responseCache = new ResponseCache();
+
+// Configurações dos prompts centralizadas
+const PROMPTS = {
+    ajuda: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um tutor didático que ajuda com exercícios sem dar respostas diretas. Guie o aluno através de perguntas e dicas para que ele chegue à resposta sozinho. Seja paciente e encorajador.",
+    dicas: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um conselheiro de estudos que oferece técnicas de aprendizagem, organização e motivação. Foque em métodos práticos e personalizados para melhorar o desempenho acadêmico.",
+    resposta_direta: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é uma enciclopédia precisa que fornece respostas diretas e objetivas. Seja claro, conciso e factual, mas mantenha o tom amigável.",
+    explicacao_profunda: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um especialista apaixonado que explica conceitos em detalhes. Use analogias, exemplos práticos e quebre tópicos complexos em partes digestíveis.",
+    correcao: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor de redação que corrige textos com cuidado. Aponte erros gramaticais, sugira melhorias de estilo e explique as correções de forma educativa."
+};
 
 // Middleware
 app.use(cors({
@@ -30,19 +105,20 @@ app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'ok', 
         message: 'Servidor do Assistente de Estudos IA funcionando!',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        cache: responseCache.getStats()
     });
 });
 
-// Rota para informações do sistema
 app.get('/api/info', (req, res) => {
     res.json({
         name: 'Assistente de Estudos IA - Wilb',
-        version: '1.0.0',
-        description: 'Assistente de estudos com IA integrada',
+        version: '1.1.0',
+        description: 'Assistente de estudos com IA integrada e sistema de cache',
         author: 'Júnior Veras',
         features: [
             'Chat com IA (Gemini)',
+            'Sistema de cache inteligente',
             'Múltiplos modos de interação',
             'Upload de imagens',
             'Histórico de conversas',
@@ -53,7 +129,6 @@ app.get('/api/info', (req, res) => {
     });
 });
 
-// Rota para configurações do cliente
 app.get('/api/config', (req, res) => {
     res.json({
         firebase: {
@@ -67,67 +142,102 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-// Rota para proxy da API do Gemini (opcional, para maior segurança)
+// Função auxiliar para chamar a API Gemini
+async function callGeminiAPI(prompt, image, mode, conversationHistory) {
+    const systemInstruction = { parts: [{ text: PROMPTS[mode] || PROMPTS['ajuda'] }] };
+
+    // Monta o histórico de conversa
+    let historyForAPI = [];
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+        historyForAPI = conversationHistory.map(message => ({
+            role: message.sender === 'user' ? 'user' : 'model',
+            parts: [{ text: message.text || '' }]
+        }));
+    }
+
+    // Monta a mensagem do usuário
+    let userParts = [{ text: prompt || 'Por favor, analise a imagem.' }];
+    if (image) {
+        userParts.push({ inlineData: { mimeType: 'image/png', data: image } });
+    }
+
+    const finalUserPart = { role: 'user', parts: userParts };
+    const payload = {
+        contents: [...historyForAPI, finalUserPart],
+        systemInstruction
+    };
+
+    // Chama a API Gemini
+    const fetch = (await import('node-fetch')).default;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    
+    const geminiRes = await fetch(geminiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const geminiData = await geminiRes.json();
+    
+    if (!geminiRes.ok) {
+        throw new Error(geminiData.error?.message || 'Erro ao chamar Gemini.');
+    }
+
+    if (geminiData.candidates?.[0]?.content?.parts?.[0]) {
+        return geminiData.candidates[0].content.parts[0].text;
+    } else if (geminiData.candidates?.[0]?.finishReason === 'SAFETY') {
+        return 'Não consigo responder a essa solicitação.';
+    }
+    
+    return 'Não consegui gerar uma resposta.';
+}
+
+// Rota principal para geração de respostas com cache
 app.post('/api/gemini/generate', async (req, res) => {
     try {
         const { prompt, image, mode, conversationHistory } = req.body;
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) {
-            return res.status(500).json({ success: false, error: 'Gemini API Key não configurada no servidor.' });
+        
+        if (!process.env.GEMINI_API_KEY) {
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Gemini API Key não configurada no servidor.' 
+            });
         }
 
-        // Monta o systemInstruction conforme o antigo script.js
-        const PROMPTS = {
-            ajuda: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um tutor didático que ajuda com exercícios sem dar respostas diretas. Guie o aluno através de perguntas e dicas para que ele chegue à resposta sozinho. Seja paciente e encorajador.",
-            dicas: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um conselheiro de estudos que oferece técnicas de aprendizagem, organização e motivação. Foque em métodos práticos e personalizados para melhorar o desempenho acadêmico.",
-            resposta_direta: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é uma enciclopédia precisa que fornece respostas diretas e objetivas. Seja claro, conciso e factual, mas mantenha o tom amigável.",
-            explicacao_profunda: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um especialista apaixonado que explica conceitos em detalhes. Use analogias, exemplos práticos e quebre tópicos complexos em partes digestíveis.",
-            correcao: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor de redação que corrige textos com cuidado. Aponte erros gramaticais, sugira melhorias de estilo e explique as correções de forma educativa."
-        };
-        const systemInstruction = { parts: [{ text: PROMPTS[mode] || PROMPTS['ajuda'] }] };
+        // Gera chave do cache (não inclui imagens no cache por enquanto)
+        const cacheKey = responseCache.generateKey(prompt, mode, conversationHistory, !!image);
+        
+        // Verifica se existe resposta em cache (apenas para requisições sem imagem)
+        let responseText = null;
+        let fromCache = false;
+        
+        if (!image) {
+            responseText = responseCache.get(cacheKey);
+            if (responseText) {
+                fromCache = true;
+                console.log(`Cache hit para chave: ${cacheKey}`);
+            }
+        }
 
-        // Monta o histórico de conversa
-        let historyForAPI = [];
-        if (conversationHistory && Array.isArray(conversationHistory)) {
-            historyForAPI = conversationHistory.map(message => ({
-                role: message.sender === 'user' ? 'user' : 'model',
-                parts: [{ text: message.text || '' }]
-            }));
+        // Se não encontrou no cache, chama a API
+        if (!responseText) {
+            console.log(`Cache miss - chamando API Gemini para chave: ${cacheKey}`);
+            responseText = await callGeminiAPI(prompt, image, mode, conversationHistory);
+            
+            // Salva no cache apenas se não tem imagem
+            if (!image && responseText) {
+                responseCache.set(cacheKey, responseText);
+            }
         }
-        // Monta a mensagem do usuário
-        let userParts = [{ text: prompt || 'Por favor, analise a imagem.' }];
-        if (image) {
-            userParts.push({ inlineData: { mimeType: 'image/png', data: image } });
-        }
-        const finalUserPart = { role: 'user', parts: userParts };
-        const payload = {
-            contents: [...historyForAPI, finalUserPart],
-            systemInstruction
-        };
 
-        // Chama a API Gemini
-        const fetch = (await import('node-fetch')).default;
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-        const geminiRes = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const geminiData = await geminiRes.json();
-        if (!geminiRes.ok) {
-            return res.status(500).json({ success: false, error: geminiData.error?.message || 'Erro ao chamar Gemini.' });
-        }
-        let responseText = 'Não consegui gerar uma resposta.';
-        if (geminiData.candidates?.[0]?.content?.parts?.[0]) {
-            responseText = geminiData.candidates[0].content.parts[0].text;
-        } else if (geminiData.candidates?.[0]?.finishReason === 'SAFETY') {
-            responseText = 'Não consigo responder a essa solicitação.';
-        }
         res.json({
             success: true,
             response: responseText,
-            mode: mode || 'ajuda'
+            mode: mode || 'ajuda',
+            cached: fromCache,
+            cacheKey: !image ? cacheKey : null
         });
+
     } catch (error) {
         console.error('Erro na API Gemini:', error);
         res.status(500).json({
@@ -137,18 +247,29 @@ app.post('/api/gemini/generate', async (req, res) => {
     }
 });
 
-// Rota para estatísticas (exemplo de API adicional)
+// Rota para estatísticas incluindo cache
 app.get('/api/stats', (req, res) => {
     res.json({
         totalUsers: 1250,
         totalChats: 8430,
         totalMessages: 45670,
         uptime: process.uptime(),
-        memoryUsage: process.memoryUsage()
+        memoryUsage: process.memoryUsage(),
+        cache: responseCache.getStats()
     });
 });
 
-// Fallback para SPA - todas as rotas não-API retornam o index.html
+// Rota para gerenciar cache (desenvolvimento/debug)
+app.post('/api/cache/clear', (req, res) => {
+    if (process.env.NODE_ENV === 'development') {
+        responseCache.clear();
+        res.json({ success: true, message: 'Cache limpo com sucesso' });
+    } else {
+        res.status(403).json({ success: false, error: 'Operação não permitida em produção' });
+    }
+});
+
+// Fallback para SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
@@ -166,8 +287,9 @@ app.use((err, req, res, next) => {
 // Iniciar servidor
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-    console.log(`📱 Assistente de Estudos IA - Versão 1.0.0`);
+    console.log(`📱 Assistente de Estudos IA - Versão 1.1.0`);
     console.log(`🔧 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`💾 Cache configurado: ${responseCache.maxSize} itens, TTL: ${responseCache.ttl/1000}s`);
     console.log(`⏰ Iniciado em: ${new Date().toLocaleString('pt-BR')}`);
 });
 
