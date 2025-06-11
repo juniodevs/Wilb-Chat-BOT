@@ -130,6 +130,7 @@ function afterFirebaseInit(firebaseFns) {
                     <p>Vamos arrasar juntos?</p>
                 </div>
             </div>`;
+        renderSuggestions();
     };
 
     const showEmptyChatMessage = () => {
@@ -288,6 +289,9 @@ function afterFirebaseInit(firebaseFns) {
             currentChatId = chatId;
             currentMessages = result.messages || [];
             chatWindow.innerHTML = '';
+            // Esconde sugestões ao abrir um chat antigo
+            const bar = document.getElementById('suggestions-bar');
+            if (bar) bar.style.display = 'none';
             if (currentMessages.length > 0) {
                 currentMessages.forEach(msg => displayMessage(msg));
             } else {
@@ -358,9 +362,9 @@ function afterFirebaseInit(firebaseFns) {
         if (message.sender === 'user') {
             const userAvatarUrl = currentUser?.photoURL || WILB_IMAGE_URL_ANON;
             messageDiv.innerHTML = `
-                <div class="bg-purple-600 text-white p-4 rounded-lg shadow-sm max-w-lg">
+                <div class="bg-purple-600 text-white p-4 rounded-lg shadow-sm max-w-lg prose">
                     ${message.imageUrl ? `<img src="${message.imageUrl}" alt="Imagem enviada" class="rounded-lg mb-2 max-w-full h-auto">` : ''}
-                    ${message.text ? `<p>${message.text}</p>` : ''}
+                    ${message.text ? `<div>${marked.parse(message.text)}</div>` : ''}
                 </div>
                 <img src="${userAvatarUrl}" alt="Ícone do usuário" class="w-10 h-10 rounded-full bg-slate-200">
             `;
@@ -373,6 +377,10 @@ function afterFirebaseInit(firebaseFns) {
         
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
+        // Renderiza LaTeX com MathJax
+        if (window.MathJax && window.MathJax.typesetPromise) {
+            window.MathJax.typesetPromise([messageDiv]);
+        }
     };
 
     const showTypingIndicator = () => {
@@ -400,7 +408,7 @@ function afterFirebaseInit(firebaseFns) {
 
     // --- API Communication ---
     const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
-        const currentMode = modeSelect.value;
+        const currentMode = getCurrentPromptMode();
         
         // Verifica cache local primeiro (apenas para texto sem imagem)
         if (!newBase64ImageData) {
@@ -507,10 +515,6 @@ function afterFirebaseInit(firebaseFns) {
         const userText = messageInput.value.trim();
         if (!userText && !imageBase64) return;
         
-        if (chatWindow.querySelector('.prose') || chatWindow.querySelector('.fa-comments')) {
-            chatWindow.innerHTML = '';
-        }
-        
         const messageForDisplay = { 
             sender: 'user', 
             text: userText, 
@@ -528,6 +532,10 @@ function afterFirebaseInit(firebaseFns) {
         updateSendButtonState();
 
         showTypingIndicator();
+
+        // Esconde sugestões ao enviar a primeira mensagem
+        const bar = document.getElementById('suggestions-bar');
+        if (bar) bar.style.display = 'none';
 
         try {
             const response = await getGeminiResponse(historyForApi, userText, tempImageBase64);
@@ -618,6 +626,73 @@ function afterFirebaseInit(firebaseFns) {
             localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
             renderHistory();
         }
+    };
+
+    // --- SUGESTÕES ALEATÓRIAS ---
+    const SUGGESTIONS = [
+        'Me ajude a revisar matemática básica',
+        'Como posso estudar melhor para provas?',
+        'Explique a fotossíntese de forma simples',
+        'Quais são dicas para organizar meus estudos?',
+        'Me dê um exemplo de redação nota 1000',
+        'Como funciona a Revolução Francesa?',
+        'Sugira técnicas para memorizar conteúdos',
+        'Qual a diferença entre mitose e meiose?',
+        'Como criar um cronograma de estudos?',
+        'Explique o que é energia cinética',
+        'Como melhorar minha concentração?',
+        'Me ajude com um exercício de física',
+        'O que é um texto dissertativo?',
+        'Como fazer um resumo eficiente?',
+        'Me explique a tabela periódica',
+        'Dicas para ENEM',
+        'Como estudar redação?',
+        'Como revisar conteúdos rapidamente?'
+    ];
+
+    function renderSuggestions() {
+        const bar = document.getElementById('suggestions-bar');
+        if (!bar) return;
+        bar.innerHTML = '';
+        // Embaralha e pega 4 sugestões
+        const shuffled = SUGGESTIONS.sort(() => 0.5 - Math.random());
+        shuffled.slice(0, 4).forEach(suggestion => {
+            const btn = document.createElement('button');
+            btn.className = 'suggestion-btn';
+            btn.textContent = suggestion;
+            btn.onclick = () => {
+                messageInput.value = suggestion;
+                updateSendButtonState();
+                handleSendMessage();
+            };
+            bar.appendChild(btn);
+        });
+        bar.style.display = 'flex';
+    }
+
+    // --- MODO DE CONVERSA (NORMAL/SÉRIO) ---
+    let conversationStyle = 'normal';
+    const modeSwitch = document.getElementById('mode-switch');
+    if (modeSwitch) {
+        modeSwitch.addEventListener('change', () => {
+            conversationStyle = modeSwitch.checked ? 'serio' : 'normal';
+            // Não chama renderSuggestions aqui!
+            // As sugestões só aparecem em showWelcomeMessage (novo chat)
+        });
+    }
+
+    // Altera o modo de conversa enviado para o backend
+    function getCurrentPromptMode() {
+        // Se for modo sério, retorna 'serio', senão mantém selecionado
+        if (conversationStyle === 'serio') return 'serio';
+        return modeSelect.value;
+    }
+
+    // --- State Initialization ---
+    const initializeState = () => {
+        updateSendButtonState();
+        showWelcomeMessage();
+        renderSuggestions();
     };
 
     // --- Event Listeners ---
@@ -759,9 +834,8 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Initialize app
-    updateSendButtonState();
-    showWelcomeMessage();
+    // Initialize app state
+    initializeState();
 }
 
 initializeFirebase();

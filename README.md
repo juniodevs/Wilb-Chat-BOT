@@ -2,6 +2,14 @@
 
 Um assistente de estudos inteligente construído com Vite, Node.js, Express e integração com Firebase e Google Gemini.
 
+---
+
+> **Este projeto é Open Source e aceita contribuições!**
+> 
+> **A marca Wilb pertence ao WEBB CENTER® com todos os direitos reservados.**
+
+---
+
 ## 🚀 Características
 
 - **Interface moderna**: Construída com Vite, Tailwind CSS e JavaScript vanilla
@@ -23,8 +31,9 @@ Um assistente de estudos inteligente construído com Vite, Node.js, Express e in
 - [x] Implementação de modos de estudo (exercícios, dicas, explicações)
 
 - Apartir daqui, o projeto está nas mãos de quem quiser contribuir!
+
+- [X] Implementação de um sistema de cache para respostas da IA (não testado)
 - [ ] Correção de Segurança e Bugs
-- [X] Implementação de um sistema de cache para respostas da IA
 - [ ] Implementar Sons e Animações
 - [ ] Responsividade total para dispositivos móveis
 - [ ] Melhorias na interface e usabilidade
@@ -106,9 +115,22 @@ assistente-estudos-vite/
 
 ## 👨‍💻 Desenvolvido por
 
-**Júnior Veras**
+[Júnior Veras](https://www.linkedin.com/in/juniorveras/)
 
 ## 📄 Licença
 
 MIT License
 
+## 🤝 Como Contribuir
+
+1. Faça um fork deste repositório
+2. Crie uma branch para sua feature ou correção: `git checkout -b minha-feature`
+3. Commit suas alterações: `git commit -m 'feat: minha nova feature'`
+4. Push para o seu fork: `git push origin minha-feature`
+5. Abra um Pull Request explicando sua contribuição
+
+Contribuições de código, documentação, sugestões e feedbacks são muito bem-vindos!
+
+## 🛡️ Direitos de Marca
+
+A marca **Wilb** pertence ao **WEBB CENTER®**. Todos os direitos reservados. O uso da marca para fins comerciais sem autorização é proibido.
