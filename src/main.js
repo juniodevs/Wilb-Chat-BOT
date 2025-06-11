@@ -72,6 +72,7 @@ function afterFirebaseInit(firebaseFns) {
     // --- Constants ---
     const WILB_IMAGE_URL = '/images/WilbAvatar.png';
     const WILB_IMAGE_URL_ANON = '/images/WilbAvatarAnon.png';
+    const WILB_POPUP_IMAGE = '/images/WilbMainImage.jpg';
     const DEFAULT_AVATAR_URL = WILB_IMAGE_URL_ANON;
 
     // --- State ---
@@ -173,6 +174,9 @@ function afterFirebaseInit(firebaseFns) {
             anonWarning.classList.add('hidden');
             headerLoginBtn.classList.remove('hidden');
             headerLoginBtn.classList.add('flex');
+            // Troca a imagem do pop-up
+            const popupImg = loginModal.querySelector('img');
+            if (popupImg) popupImg.src = WILB_POPUP_IMAGE;
         }
     };
 
