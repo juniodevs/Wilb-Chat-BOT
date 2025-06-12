@@ -412,7 +412,8 @@ function afterFirebaseInit(firebaseFns) {
 
     // --- API Communication ---
     const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
-        const currentMode = getCurrentPromptMode();
+        const currentMode = modeSelect.value;
+        const seriousMode = conversationModeSwitch && conversationModeSwitch.checked === true;
         
         if (!newBase64ImageData) {
             const cached = localCache.get(newText, currentMode);
@@ -426,7 +427,8 @@ function afterFirebaseInit(firebaseFns) {
             conversationHistory,
             prompt: newText,
             image: newBase64ImageData,
-            mode: currentMode
+            mode: currentMode,
+            seriousMode // boolean
         };
         
         const response = await fetch('/api/gemini/generate', {

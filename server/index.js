@@ -86,7 +86,7 @@ const PROMPTS = {
     resposta_direta: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é uma enciclopédia precisa que fornece respostas diretas e objetivas. Seja claro, conciso e factual, mas mantenha o tom amigável. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas, listas, tabelas, exemplos e destaques.",
     explicacao_profunda: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um especialista apaixonado que explica conceitos em detalhes. Use analogias, exemplos práticos e quebre tópicos complexos em partes digestíveis. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas matemáticas, listas, exemplos, destaques e explicações passo a passo.",
     correcao: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor de redação que corrige textos com cuidado. Aponte erros gramaticais, sugira melhorias de estilo e explique as correções de forma educativa. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para destacar correções, exemplos e sugestões.",
-    serio: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um tutor objetivo, formal e direto, sem uso de emojis ou informalidade. Fale de forma clara, profissional e sem rodeios. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor sério que responde de modo direto, sem brincadeiras ou informalidade. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas matemáticas, listas, tabelas, exemplos e destaques. Use blocos de código para fórmulas e sintaxe LaTeX quando apropriado."
+    serio: "ATENÇÃO: Dois prompts de personalidade podem ser enviados juntos, mas neste modo você deve IGNORAR QUALQUER OUTRA PERSONALIDADE considerar APENAS esta personalidade séria. PERSONALIDADE DO ASSISTENTE: Você é Wilb, um tutor objetivo, formal. NÃO use emojis, emotes ou qualquer tipo de informalidade. Fale de forma clara, profissional e sem rodeios, SEM NENHUM EMOTE. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor sério sem brincadeiras ou informalidade. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas matemáticas, listas, tabelas, exemplos e destaques. Use blocos de código para fórmulas e sintaxe LaTeX quando apropriado."
 };
 
 // Middleware
@@ -145,7 +145,14 @@ app.get('/api/config', (req, res) => {
 
 // Função auxiliar para chamar a API Gemini
 async function callGeminiAPI(prompt, image, mode, conversationHistory) {
-    const systemInstruction = { parts: [{ text: PROMPTS[mode] || PROMPTS['ajuda'] }] };
+    let promptMode = (mode || 'ajuda').toString().toLowerCase();
+    let systemPrompt = PROMPTS[promptMode] || PROMPTS['ajuda'];
+    // Se o modo for 'serio' e também houver outro modo, concatene o prompt sério ANTES do prompt do outro modo
+    if (promptMode === 'serio' && prompt && prompt._originalMode && PROMPTS[prompt._originalMode]) {
+        // prompt._originalMode é passado do frontend para indicar o modo "normal" selecionado
+        systemPrompt = PROMPTS['serio'] + '\n' + PROMPTS[prompt._originalMode];
+    }
+    const systemInstruction = { parts: [{ text: systemPrompt }] };
 
     // Monta o histórico de conversa
     let historyForAPI = [];
@@ -196,7 +203,7 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory) {
 // Rota principal para geração de respostas com cache
 app.post('/api/gemini/generate', async (req, res) => {
     try {
-        const { prompt, image, mode, conversationHistory } = req.body;
+        const { prompt, image, mode, conversationHistory, seriousMode } = req.body;
         
         if (!process.env.GEMINI_API_KEY) {
             return res.status(500).json({ 
@@ -205,9 +212,11 @@ app.post('/api/gemini/generate', async (req, res) => {
             });
         }
 
-        // Corrige: promptMode pode ser 'serio', então a chave do cache deve usar promptMode
+        // Novo tratamento do modo sério
         let promptMode = mode;
-        if (mode === 'serio') promptMode = 'serio';
+        if (seriousMode === true) {
+            promptMode = 'serio';
+        }
         const cacheKey = responseCache.generateKey(prompt, promptMode, conversationHistory, !!image);
         let responseText = null;
         let fromCache = false;
