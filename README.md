@@ -46,6 +46,7 @@ A partir daqui, o projeto está aberto para contribuição da comunidade!
 
 * [x] Sistema de cache para respostas da IA (em testes)
 * [X] Dark Mode
+* [ ] Suporte a múltiplos idiomas
 * [ ] Implementação de design responsivo
 * [ ] Correções de bugs e melhorias de segurança
 * [ ] Sons e animações
@@ -56,7 +57,6 @@ A partir daqui, o projeto está aberto para contribuição da comunidade!
 * [ ] Autenticação avançada (e-mail/senha, etc.)
 * [ ] Otimização de performance e segurança
 * [ ] Notificações em tempo real
-* [ ] Suporte a múltiplos idiomas
 * [ ] Painel administrativo
 * [ ] Aprimoramento da análise de imagens com IA
 * [ ] Sistema de feedback dos usuários
