@@ -223,6 +223,23 @@ main, #chat-window, #history-panel {
     }
 }
 
+#conversation-mode-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+    margin: 1rem 2rem 0 0;
+}
+
+.flex-1.flex.flex-col.bg-slate-100.h-full {
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    #conversation-mode-container {
+        margin: 0.5rem 0.5rem 0 0;
+    }
+}
 
 /* Dark Mode */
 :root {
@@ -300,9 +317,6 @@ body {
 #user-menu-dropdown::before {
     border-bottom-color: var(--background-color);
 }
-
-
-
 
 /* Dark Mode - Elementos específicos */
 .dark-mode #app-container {
@@ -669,7 +683,6 @@ body {
     min-width: 45px;
     text-align: center;
 }
-/* Responsive adjustments */
 
 @media (max-width: 1024px) {
     #conversation-mode-container span:not(#conversation-mode-label) {
@@ -678,5 +691,31 @@ body {
     
     #conversation-mode-container .gap-2 {
         gap: 0.25rem;
+    }
+}
+
+#conversation-mode-container select#interaction-mode-select {
+    margin-left: 1rem;
+    min-width: 170px;
+    font-size: 0.95rem;
+    height: 2.2rem;
+    background: var(--input-bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+#conversation-mode-container select#interaction-mode-select:focus {
+    outline: 2px solid var(--primary-color);
+    background: var(--accent-color);
+}
+
+@media (max-width: 768px) {
+    #conversation-mode-container select#interaction-mode-select {
+        min-width: 120px;
+        font-size: 0.85rem;
+        margin-left: 0.5rem;
+        padding: 0.25rem 0.5rem;
     }
 }

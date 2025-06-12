@@ -657,9 +657,8 @@ function afterFirebaseInit(firebaseFns) {
         const bar = document.getElementById('suggestions-bar');
         if (!bar) return;
         bar.innerHTML = '';
-        // Embaralha e pega 4 sugestões
         const shuffled = SUGGESTIONS.sort(() => 0.5 - Math.random());
-        shuffled.slice(0, 4).forEach(suggestion => {
+        shuffled.slice(0, 2).forEach(suggestion => {
             const btn = document.createElement('button');
             btn.className = 'suggestion-btn';
             btn.textContent = suggestion;
