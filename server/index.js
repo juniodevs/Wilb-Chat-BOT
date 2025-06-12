@@ -36,13 +36,13 @@ class ResponseCache {
     get(key) {
         const item = this.cache.get(key);
         if (!item) return null;
-        
+
         // Verifica se o item expirou
         if (Date.now() > item.expiry) {
             this.cache.delete(key);
             return null;
         }
-        
+
         // Move para o final (LRU)
         this.cache.delete(key);
         this.cache.set(key, item);
@@ -103,8 +103,8 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // Rotas da API
 app.get('/api/health', (req, res) => {
-    res.json({ 
-        status: 'ok', 
+    res.json({
+        status: 'ok',
         message: 'Servidor do Assistente de Estudos IA funcionando!',
         timestamp: new Date().toISOString(),
         cache: responseCache.getStats()
@@ -144,16 +144,18 @@ app.get('/api/config', (req, res) => {
 });
 
 // Função auxiliar para chamar a API Gemini
-async function callGeminiAPI(prompt, image, mode, conversationHistory) {
+async function callGeminiAPI(prompt, image, mode, conversationHistory, language = 'pt-br') {
     let promptMode = (mode || 'ajuda').toString().toLowerCase();
     let systemPrompt = PROMPTS[promptMode] || PROMPTS['ajuda'];
+    // Adiciona instrução explícita de idioma
+    const languageInstruction = `IMPORTANTE:(Você está no modo ${language}) Responda sempre nesse idioma ${language}, mesmo se a mensagem for em um idioma diferente, e caso mandem outro idioma avise ("Estou no Modo ${language} (fale a língua completa)"). Não traduza para outro idioma, mesmo que solicitado. Seja natural e fluente.`;
+    systemPrompt = `${languageInstruction}\n${systemPrompt}`;
     // Se o modo for 'serio' e também houver outro modo, concatene o prompt sério ANTES do prompt do outro modo
     if (promptMode === 'serio' && prompt && prompt._originalMode && PROMPTS[prompt._originalMode]) {
-        // prompt._originalMode é passado do frontend para indicar o modo "normal" selecionado
-        systemPrompt = PROMPTS['serio'] + '\n' + PROMPTS[prompt._originalMode];
+        systemPrompt = `${languageInstruction}\n${PROMPTS['serio']}\n${PROMPTS[prompt._originalMode]}`;
     }
     const systemInstruction = { parts: [{ text: systemPrompt }] };
-
+    
     // Monta o histórico de conversa
     let historyForAPI = [];
     if (conversationHistory && Array.isArray(conversationHistory)) {
@@ -178,7 +180,7 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory) {
     // Chama a API Gemini
     const fetch = (await import('node-fetch')).default;
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    
+
     const geminiRes = await fetch(geminiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -186,7 +188,7 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory) {
     });
 
     const geminiData = await geminiRes.json();
-    
+
     if (!geminiRes.ok) {
         throw new Error(geminiData.error?.message || 'Erro ao chamar Gemini.');
     }
@@ -196,19 +198,18 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory) {
     } else if (geminiData.candidates?.[0]?.finishReason === 'SAFETY') {
         return 'Não consigo responder a essa solicitação.';
     }
-    
     return 'Não consegui gerar uma resposta.';
 }
 
 // Rota principal para geração de respostas com cache
 app.post('/api/gemini/generate', async (req, res) => {
     try {
-        const { prompt, image, mode, conversationHistory, seriousMode } = req.body;
-        
+        const { prompt, image, mode, conversationHistory, seriousMode, language } = req.body;
+
         if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({ 
-                success: false, 
-                error: 'Gemini API Key não configurada no servidor.' 
+            return res.status(500).json({
+                success: false,
+                error: 'Gemini API Key não configurada no servidor.'
             });
         }
 
@@ -229,7 +230,14 @@ app.post('/api/gemini/generate', async (req, res) => {
         }
         if (!responseText) {
             console.log(`Cache miss - chamando API Gemini para chave: ${cacheKey}`);
-            responseText = await callGeminiAPI(prompt, image, promptMode, conversationHistory);
+            responseText = await callGeminiAPI(
+                prompt,
+                image,
+                promptMode,
+                conversationHistory,
+                language?.toLowerCase() || 'pt-br'
+            );
+
             if (!image && responseText) {
                 responseCache.set(cacheKey, responseText);
             }
@@ -294,7 +302,7 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     console.log(`📱 Assistente de Estudos IA - Versão 1.1.0`);
     console.log(`🔧 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`💾 Cache configurado: ${responseCache.maxSize} itens, TTL: ${responseCache.ttl/1000}s`);
+    console.log(`💾 Cache configurado: ${responseCache.maxSize} itens, TTL: ${responseCache.ttl / 1000}s`);
     console.log(`⏰ Iniciado em: ${new Date().toLocaleString('pt-BR')}`);
 });
 

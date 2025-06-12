@@ -92,30 +92,30 @@ function afterFirebaseInit(firebaseFns) {
     const localCache = {
         responses: new Map(),
         maxSize: 50,
-        
+
         generateKey(prompt, mode) {
             return `${mode}:${prompt.trim().toLowerCase()}`;
         },
-        
+
         get(prompt, mode) {
             const key = this.generateKey(prompt, mode);
             return this.responses.get(key);
         },
-        
+
         set(prompt, mode, response) {
             const key = this.generateKey(prompt, mode);
-            
+
             if (this.responses.size >= this.maxSize) {
                 const firstKey = this.responses.keys().next().value;
                 this.responses.delete(firstKey);
             }
-            
+
             this.responses.set(key, {
                 response,
                 timestamp: Date.now()
             });
         },
-        
+
         clear() {
             this.responses.clear();
         }
@@ -123,7 +123,7 @@ function afterFirebaseInit(firebaseFns) {
 
     // --- Utility Functions ---
     const scrollToBottom = () => chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
-    
+
     // Inicializar o gerenciador de tema
     initThemeTransition();
 
@@ -167,7 +167,7 @@ function afterFirebaseInit(firebaseFns) {
                 userMenuButton.classList.add('flex');
                 headerLoginBtn.classList.add('hidden');
                 anonWarning.classList.add('hidden');
-                
+
                 const userPhoto = user.photoURL || DEFAULT_AVATAR_URL;
                 userPhotoEl.src = userPhoto;
                 dropdownUserPhoto.src = userPhoto;
@@ -191,7 +191,7 @@ function afterFirebaseInit(firebaseFns) {
         const displayHistory = [...historyData].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
         if (displayHistory.length === 0) {
-            const message = currentUser?.isAnonymous 
+            const message = currentUser?.isAnonymous
                 ? 'Seu histórico não é salvo no modo anônimo.'
                 : 'Seu histórico aparecerá aqui.';
             historyList.innerHTML = `<div class="text-center text-sm text-slate-500 mt-4 px-2">${message}</div>`;
@@ -211,11 +211,11 @@ function afterFirebaseInit(firebaseFns) {
             }
 
             const iconClass = item.pinned ? 'fa-thumbtack text-purple-600' : 'fa-comment';
-            
+
             const titleContent = item.isRenaming
                 ? `<input class="rename-input flex-1 bg-white border border-purple-500 rounded px-1 text-sm" value="${item.title.replace('...', '')}" />`
                 : `<span class="flex-1 truncate">${item.title}</span>`;
-            
+
             itemDiv.innerHTML = `
                 <i class="fa-regular ${iconClass} w-5 text-center"></i> 
                 ${titleContent}
@@ -254,7 +254,7 @@ function afterFirebaseInit(firebaseFns) {
     const loadHistoryFromFirestore = () => {
         if (unsubscribeHistory) unsubscribeHistory();
         if (!currentUser) return;
-        
+
         if (currentUser.isAnonymous) {
             const localHistory = localStorage.getItem(`anonymousHistory_${currentUser.uid}`);
             historyData = localHistory ? JSON.parse(localHistory) : [];
@@ -264,7 +264,7 @@ function afterFirebaseInit(firebaseFns) {
 
         const chatsRef = collection(db, "users", currentUser.uid, "chats");
         const q = query(chatsRef, orderBy("createdAt", "desc"));
-        
+
         unsubscribeHistory = onSnapshot(q, (querySnapshot) => {
             historyData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderHistory();
@@ -312,7 +312,7 @@ function afterFirebaseInit(firebaseFns) {
             localStorage.removeItem(`anonymousHistory_${currentUser.uid}`);
         }
         await signOut(auth);
-        localStorage.removeItem('anonymousUid'); 
+        localStorage.removeItem('anonymousUid');
         resetAppState();
         window.location.reload();
     };
@@ -378,7 +378,7 @@ function afterFirebaseInit(firebaseFns) {
                 <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${marked.parse(message.text)}</div>
             `;
         }
-        
+
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
         // Renderiza LaTeX com MathJax
@@ -414,7 +414,7 @@ function afterFirebaseInit(firebaseFns) {
     const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
         const currentMode = modeSelect.value;
         const seriousMode = conversationModeSwitch && conversationModeSwitch.checked === true;
-        
+
         if (!newBase64ImageData) {
             const cached = localCache.get(newText, currentMode);
             if (cached) {
@@ -428,68 +428,73 @@ function afterFirebaseInit(firebaseFns) {
             prompt: newText,
             image: newBase64ImageData,
             mode: currentMode,
-            seriousMode // boolean
+            seriousMode,
         };
         
+        const language = localStorage.getItem('language') || 'pt-BR';
+
         const response = await fetch('/api/gemini/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': language
+            },
+            body: JSON.stringify({ ...payload, language })
         });
-        
+
         if (!response.ok) {
             const errorBody = await response.text();
             console.error("API Error Response Body:", errorBody);
             throw new Error(`API request failed with status ${response.status}`);
         }
-        
+
         const result = await response.json();
-        
+
         if (result && result.response) {
             // Salva no cache local se não tem imagem
             if (!newBase64ImageData) {
                 localCache.set(newText, currentMode, result.response);
             }
-            
+
             // Log se veio do cache do servidor
             if (result.cached) {
                 console.log('Resposta veio do cache do servidor');
             }
-            
+
             return result.response;
         }
-        
+
         return "Não consegui gerar uma resposta.";
     };
 
     // --- Chat Management ---
     const createNewChat = async (title, messages) => {
         if (!currentUser) return;
-        
-        const messagesToStore = messages.map(msg => ({ 
-            sender: msg.sender, 
-            text: msg.text, 
-            hasImage: msg.hasImage || false 
+
+        const messagesToStore = messages.map(msg => ({
+            sender: msg.sender,
+            text: msg.text,
+            hasImage: msg.hasImage || false
         }));
-        
+
         if (currentUser.isAnonymous) {
-            const newChat = { 
-                id: `chat_${Date.now()}`, 
-                title, 
-                messages: messagesToStore, 
-                pinned: false, 
-                createdAt: new Date().toISOString() 
+            const newChat = {
+                id: `chat_${Date.now()}`,
+                title,
+                messages: messagesToStore,
+                pinned: false,
+                createdAt: new Date().toISOString()
             };
             historyData.unshift(newChat);
             localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
             currentChatId = newChat.id;
             renderHistory();
         } else {
-            const docRef = await addDoc(collection(db, "users", currentUser.uid, "chats"), { 
-                title, 
-                messages: messagesToStore, 
-                pinned: false, 
-                createdAt: serverTimestamp() 
+            const docRef = await addDoc(collection(db, "users", currentUser.uid, "chats"), {
+                title,
+                messages: messagesToStore,
+                pinned: false,
+                createdAt: serverTimestamp()
             });
             currentChatId = docRef.id;
         }
@@ -497,13 +502,13 @@ function afterFirebaseInit(firebaseFns) {
 
     const updateChat = async (chatId, messages) => {
         if (!currentUser) return;
-        
-        const messagesToStore = messages.map(msg => ({ 
-            sender: msg.sender, 
-            text: msg.text, 
-            hasImage: msg.hasImage || false 
+
+        const messagesToStore = messages.map(msg => ({
+            sender: msg.sender,
+            text: msg.text,
+            hasImage: msg.hasImage || false
         }));
-        
+
         if (currentUser.isAnonymous) {
             const chatIndex = historyData.findIndex(c => c.id === chatId);
             if (chatIndex > -1) {
@@ -519,14 +524,14 @@ function afterFirebaseInit(firebaseFns) {
     const handleSendMessage = async () => {
         const userText = messageInput.value.trim();
         if (!userText && !imageBase64) return;
-        
-        const messageForDisplay = { 
-            sender: 'user', 
-            text: userText, 
-            imageUrl: imageBase64 ? imagePreview.src : null, 
-            hasImage: !!imageBase64 
+
+        const messageForDisplay = {
+            sender: 'user',
+            text: userText,
+            imageUrl: imageBase64 ? imagePreview.src : null,
+            hasImage: !!imageBase64
         };
-        
+
         const historyForApi = [...currentMessages];
         currentMessages.push(messageForDisplay);
         displayMessage(messageForDisplay);
@@ -545,7 +550,7 @@ function afterFirebaseInit(firebaseFns) {
         try {
             const response = await getGeminiResponse(historyForApi, userText, tempImageBase64);
             removeTypingIndicator();
-            
+
             const assistantMessage = { sender: 'assistant', text: response };
             currentMessages.push(assistantMessage);
             displayMessage(assistantMessage);
@@ -559,9 +564,9 @@ function afterFirebaseInit(firebaseFns) {
         } catch (error) {
             removeTypingIndicator();
             console.error('Erro ao obter resposta:', error);
-            const errorMessage = { 
-                sender: 'assistant', 
-                text: 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.' 
+            const errorMessage = {
+                sender: 'assistant',
+                text: 'Desculpe, ocorreu um erro ao processar sua mensagem. Tente novamente.'
             };
             currentMessages.push(errorMessage);
             displayMessage(errorMessage);
@@ -574,10 +579,10 @@ function afterFirebaseInit(firebaseFns) {
         if (chatIndex === -1) return;
 
         historyData[chatIndex].isRenaming = false;
-        
+
         if (newTitle && newTitle.trim() !== '') {
             historyData[chatIndex].title = newTitle.trim();
-            
+
             if (currentUser && !currentUser.isAnonymous) {
                 try {
                     const chatDocRef = doc(db, "users", currentUser.uid, "chats", chatId);
@@ -589,13 +594,13 @@ function afterFirebaseInit(firebaseFns) {
                 localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
             }
         }
-        
+
         renderHistory();
     };
 
     const deleteChat = async (chatId) => {
         if (!confirm('Tem certeza que deseja excluir este chat?')) return;
-        
+
         if (currentUser && !currentUser.isAnonymous) {
             try {
                 const chatDocRef = doc(db, "users", currentUser.uid, "chats", chatId);
@@ -608,7 +613,7 @@ function afterFirebaseInit(firebaseFns) {
             localStorage.setItem(`anonymousHistory_${currentUser.uid}`, JSON.stringify(historyData));
             renderHistory();
         }
-        
+
         if (currentChatId === chatId) {
             startNewChat();
         }
@@ -619,7 +624,7 @@ function afterFirebaseInit(firebaseFns) {
         if (chatIndex === -1) return;
 
         historyData[chatIndex].pinned = !historyData[chatIndex].pinned;
-        
+
         if (currentUser && !currentUser.isAnonymous) {
             try {
                 const chatDocRef = doc(db, "users", currentUser.uid, "chats", chatId);
@@ -701,7 +706,7 @@ function afterFirebaseInit(firebaseFns) {
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         updateUIForUser(user);
-        
+
         if (user) {
             if (user.isAnonymous) {
                 localStorage.setItem('anonymousUid', user.uid);
@@ -725,11 +730,11 @@ function afterFirebaseInit(firebaseFns) {
     headerLoginBtn.addEventListener('click', () => {
         loginModal.style.display = 'flex';
     });
-    
+
     loginFromWarning.addEventListener('click', () => {
         loginModal.style.display = 'flex';
     });
-    
+
     loginGoogleBtn.addEventListener('click', signInWithGoogle);
     loginAnonBtn.addEventListener('click', signInAnonymouslyFlow);
     logoutBtn.addEventListener('click', handleSignOut);
@@ -779,24 +784,24 @@ function afterFirebaseInit(firebaseFns) {
     historyList.addEventListener('click', (e) => {
         const historyItem = e.target.closest('.history-item');
         const optionsBtn = e.target.closest('.options-btn');
-        
+
         if (optionsBtn) {
             e.stopPropagation();
             const itemId = optionsBtn.dataset.itemId;
             contextTargetId = itemId;
-            
+
             const rect = optionsBtn.getBoundingClientRect();
             contextMenu.style.left = `${rect.left - 120}px`;
             contextMenu.style.top = `${rect.bottom + 5}px`;
             contextMenu.classList.remove('hidden');
-            
+
             return;
         }
-        
+
         if (historyItem && !historyItem.querySelector('.rename-input')) {
             const chatId = historyItem.dataset.id;
             loadChat(chatId);
-            
+
             // Close mobile menu
             historyPanel.classList.add('-translate-x-full');
             historyOverlay.classList.add('hidden');
@@ -807,7 +812,7 @@ function afterFirebaseInit(firebaseFns) {
     contextMenu.addEventListener('click', (e) => {
         const action = e.target.dataset.action;
         if (!action || !contextTargetId) return;
-        
+
         switch (action) {
             case 'rename':
                 const chatIndex = historyData.findIndex(c => c.id === contextTargetId);
@@ -823,7 +828,7 @@ function afterFirebaseInit(firebaseFns) {
                 deleteChat(contextTargetId);
                 break;
         }
-        
+
         contextMenu.classList.add('hidden');
         contextTargetId = null;
     });
@@ -842,7 +847,7 @@ function afterFirebaseInit(firebaseFns) {
     // --- Conversation Mode Logic ---
     const conversationModeSwitch = document.getElementById('conversation-mode-switch');
     const conversationModeLabel = document.getElementById('conversation-mode-label');
-    
+
     const updateConversationModeLabel = () => {
         if (conversationModeSwitch.checked) {
             conversationModeLabel.textContent = 'Sério';
@@ -858,6 +863,7 @@ function afterFirebaseInit(firebaseFns) {
     } else {
         conversationModeSwitch.checked = false;
     }
+
     updateConversationModeLabel();
 
     conversationModeSwitch.addEventListener('change', () => {
@@ -870,43 +876,43 @@ function afterFirebaseInit(firebaseFns) {
 initializeFirebase();
 
 
-    // --- Dark Mode Logic ---
-    const darkModeToggle = document.getElementById('dark-mode-toggle');
-    const body = document.body;
+// --- Dark Mode Logic ---
+const darkModeToggle = document.getElementById('dark-mode-toggle');
+const body = document.body;
 
-    const enableDarkMode = () => {
-        body.classList.add('dark-mode');
-        localStorage.setItem('theme', 'dark');
-        darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
-        darkModeToggle.querySelector('span').textContent = 'Modo Claro';
-    };
+const enableDarkMode = () => {
+    body.classList.add('dark-mode');
+    localStorage.setItem('theme', 'dark');
+    darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+    darkModeToggle.querySelector('span').textContent = 'Modo Claro';
+};
 
-    const disableDarkMode = () => {
-        body.classList.remove('dark-mode');
-        localStorage.setItem('theme', 'light');
-        darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
-        darkModeToggle.querySelector('span').textContent = 'Modo Escuro';
-    };
+const disableDarkMode = () => {
+    body.classList.remove('dark-mode');
+    localStorage.setItem('theme', 'light');
+    darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
+    darkModeToggle.querySelector('span').textContent = 'Modo Escuro';
+};
 
-    const toggleDarkMode = () => {
-        if (body.classList.contains('dark-mode')) {
-            disableDarkMode();
-        } else {
-            enableDarkMode();
-        }
-    };
-
-    // Check for saved theme preference on load
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        enableDarkMode();
-    } else if (savedTheme === 'light') {
+const toggleDarkMode = () => {
+    if (body.classList.contains('dark-mode')) {
         disableDarkMode();
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        // If no preference, check system preference
-        enableDarkMode();
     } else {
-        disableDarkMode();
+        enableDarkMode();
     }
+};
 
-    darkModeToggle.addEventListener('click', toggleDarkMode);
+// Check for saved theme preference on load
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') {
+    enableDarkMode();
+} else if (savedTheme === 'light') {
+    disableDarkMode();
+} else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    // If no preference, check system preference
+    enableDarkMode();
+} else {
+    disableDarkMode();
+}
+
+darkModeToggle.addEventListener('click', toggleDarkMode);
