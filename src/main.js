@@ -101,7 +101,6 @@ function afterFirebaseInit(firebaseFns) {
         set(prompt, mode, response) {
             const key = this.generateKey(prompt, mode);
             
-            // Remove o mais antigo se atingir o limite
             if (this.responses.size >= this.maxSize) {
                 const firstKey = this.responses.keys().next().value;
                 this.responses.delete(firstKey);
@@ -175,7 +174,6 @@ function afterFirebaseInit(firebaseFns) {
             anonWarning.classList.add('hidden');
             headerLoginBtn.classList.remove('hidden');
             headerLoginBtn.classList.add('flex');
-            // Troca a imagem do pop-up
             const popupImg = loginModal.querySelector('img');
             if (popupImg) popupImg.src = WILB_POPUP_IMAGE;
         }
@@ -289,7 +287,6 @@ function afterFirebaseInit(firebaseFns) {
             currentChatId = chatId;
             currentMessages = result.messages || [];
             chatWindow.innerHTML = '';
-            // Esconde sugestões ao abrir um chat antigo
             const bar = document.getElementById('suggestions-bar');
             if (bar) bar.style.display = 'none';
             if (currentMessages.length > 0) {
@@ -410,7 +407,6 @@ function afterFirebaseInit(firebaseFns) {
     const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
         const currentMode = getCurrentPromptMode();
         
-        // Verifica cache local primeiro (apenas para texto sem imagem)
         if (!newBase64ImageData) {
             const cached = localCache.get(newText, currentMode);
             if (cached) {
@@ -676,8 +672,6 @@ function afterFirebaseInit(firebaseFns) {
     if (modeSwitch) {
         modeSwitch.addEventListener('change', () => {
             conversationStyle = modeSwitch.checked ? 'serio' : 'normal';
-            // Não chama renderSuggestions aqui!
-            // As sugestões só aparecem em showWelcomeMessage (novo chat)
         });
     }
 
@@ -836,6 +830,75 @@ function afterFirebaseInit(firebaseFns) {
 
     // Initialize app state
     initializeState();
+
+    // --- Conversation Mode Logic ---
+    const conversationModeSwitch = document.getElementById('conversation-mode-switch');
+    const conversationModeLabel = document.getElementById('conversation-mode-label');
+    
+    const updateConversationModeLabel = () => {
+        if (conversationModeSwitch.checked) {
+            conversationModeLabel.textContent = 'Sério';
+        } else {
+            conversationModeLabel.textContent = 'Normal';
+        }
+    };
+
+    // Load saved conversation mode preference
+    const savedConversationMode = localStorage.getItem('conversationMode');
+    if (savedConversationMode === 'serious') {
+        conversationModeSwitch.checked = true;
+    } else {
+        conversationModeSwitch.checked = false;
+    }
+    updateConversationModeLabel();
+
+    conversationModeSwitch.addEventListener('change', () => {
+        const mode = conversationModeSwitch.checked ? 'serious' : 'normal';
+        localStorage.setItem('conversationMode', mode);
+        updateConversationModeLabel();
+    });
 }
 
 initializeFirebase();
+
+
+    // --- Dark Mode Logic ---
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    const body = document.body;
+
+    const enableDarkMode = () => {
+        body.classList.add('dark-mode');
+        localStorage.setItem('theme', 'dark');
+        darkModeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+        darkModeToggle.querySelector('span').textContent = 'Modo Claro';
+    };
+
+    const disableDarkMode = () => {
+        body.classList.remove('dark-mode');
+        localStorage.setItem('theme', 'light');
+        darkModeToggle.querySelector('i').classList.replace('fa-sun', 'fa-moon');
+        darkModeToggle.querySelector('span').textContent = 'Modo Escuro';
+    };
+
+    const toggleDarkMode = () => {
+        if (body.classList.contains('dark-mode')) {
+            disableDarkMode();
+        } else {
+            enableDarkMode();
+        }
+    };
+
+    // Check for saved theme preference on load
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        enableDarkMode();
+    } else if (savedTheme === 'light') {
+        disableDarkMode();
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // If no preference, check system preference
+        enableDarkMode();
+    } else {
+        disableDarkMode();
+    }
+
+    darkModeToggle.addEventListener('click', toggleDarkMode);
