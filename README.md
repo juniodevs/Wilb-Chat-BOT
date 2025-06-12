@@ -45,8 +45,8 @@ Este projeto oferece uma experiência de aprendizado personalizada e interativa,
 A partir daqui, o projeto está aberto para contribuição da comunidade!
 
 * [x] Sistema de cache para respostas da IA (em testes)
-* [ ] Dark Mode
-* [ ] Implementação de design responsivo]
+* [X] Dark Mode
+* [ ] Implementação de design responsivo
 * [ ] Correções de bugs e melhorias de segurança
 * [ ] Sons e animações
 * [ ] Responsividade total em dispositivos móveis
