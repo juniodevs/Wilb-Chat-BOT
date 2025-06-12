@@ -1,5 +1,9 @@
 // Importar estilos
 import './style.css'
+import { initThemeTransition } from './themeManager.js'
+
+// Inicializar o gerenciador de tema imediatamente
+initThemeTransition();
 
 // --- Firebase Config ---
 let app, auth, db, googleProvider;
@@ -119,6 +123,9 @@ function afterFirebaseInit(firebaseFns) {
 
     // --- Utility Functions ---
     const scrollToBottom = () => chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
+    
+    // Inicializar o gerenciador de tema
+    initThemeTransition();
 
     const showWelcomeMessage = () => {
         chatWindow.innerHTML = `

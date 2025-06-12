@@ -177,12 +177,18 @@ main, #chat-window, #history-panel {
 #new-chat-btn, 
 #send-btn, 
 #interaction-mode-select { 
-    transition: all 0.2s ease-in-out; 
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        color var(--transition-duration) var(--transition-timing),
+        transform var(--transition-duration) var(--transition-timing);
 }
 
 #context-menu, 
 #user-menu-dropdown { 
-    transition: opacity 0.15s ease-out, transform 0.15s ease-out; 
+    transition: 
+        opacity var(--transition-duration) var(--transition-timing),
+        transform var(--transition-duration) var(--transition-timing),
+        background-color var(--transition-duration) var(--transition-timing);
 }
 
 #user-menu-dropdown::before {
@@ -451,14 +457,127 @@ body {
     border-color: var(--primary-color) !important;
 }
 
-/* Dark Mode - Transições suaves */
-* {
-    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+/* Theme Transition Effects */
+.theme-transitioning {
+    pointer-events: none;
+    filter: blur(8px);
+    transition: filter 0.5s var(--transition-timing);
+}
+
+/* Theme Transition Overlay */
+#theme-transition-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--background-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: 
+        opacity 0.5s var(--transition-timing),
+        visibility 0.5s var(--transition-timing),
+        background-color 0s linear 0.25s;
+}
+
+#theme-transition-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Wilb Loading Animation */
+#wilb-loading {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    box-shadow: 0 0 50px var(--primary-color);
+    animation: wilb-spin 2s infinite cubic-bezier(0.45, 0, 0.55, 1);
+    background-size: contain !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    position: relative;
+    transform: scale(0.5);
+    opacity: 0;
+    transition: 
+        transform 0.5s var(--transition-timing),
+        opacity 0.5s var(--transition-timing),
+        box-shadow 0.5s var(--transition-timing);
+}
+
+#theme-transition-overlay.active #wilb-loading {
+    transform: scale(1);
+    opacity: 1;
+}
+
+#wilb-loading::after {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: -15px;
+    right: -15px;
+    bottom: -15px;
+    border-radius: 50%;
+    border: 3px solid var(--primary-color);
+    animation: pulse 2s infinite;
+}
+
+#wilb-loading::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    left: -30px;
+    right: -30px;
+    bottom: -30px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    opacity: 0.5;
+    animation: pulse 2s infinite 0.3s;
+}
+
+/* Transições Globais */
+:root {
+    --transition-duration: 0.3s;
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Remove transição de elementos específicos que não precisam dela */
+.typing-dot {
+    transition: none !important;
+}
+
+@keyframes wilb-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
 }
 
 /* Dark Mode - Botão de toggle */
 #dark-mode-toggle {
-    transition: all 0.2s ease;
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        transform var(--transition-duration) var(--transition-timing);
 }
 
 #dark-mode-toggle:hover {
@@ -475,13 +594,57 @@ body {
 }
 
 
-/* Conversation Mode Container */
-#conversation-mode-container {
-    transition: all 0.2s ease;
+/* Dark Mode Toggle Button */
+#dark-mode-toggle {
+    position: relative;
+    transition: all 0.3s var(--transition-timing);
+    overflow: hidden;
 }
 
+#dark-mode-toggle i {
+    transition: transform 0.5s var(--transition-timing);
+}
+
+.dark-mode #dark-mode-toggle i {
+    transform: rotate(360deg);
+}
+
+#dark-mode-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s var(--transition-timing);
+}
+
+#dark-mode-toggle:hover::before {
+    left: 100%;
+}
+
+.dark-mode #dark-mode-toggle {
+    background: var(--input-bg-color) !important;
+}
+
+.dark-mode #dark-mode-toggle span {
+    color: var(--text-color);
+}
+
+
+/* Conversation Mode Container */
+#conversation-mode-container,
 #conversation-mode-container .bg-white {
-    transition: all 0.2s ease;
+    transition: 
+        background-color var(--transition-duration) var(--transition-timing),
+        transform var(--transition-duration) var(--transition-timing),
+        box-shadow var(--transition-duration) var(--transition-timing);
 }
 
 #conversation-mode-container:hover .bg-white {
