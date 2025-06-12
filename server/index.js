@@ -148,7 +148,7 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory, language 
     let promptMode = (mode || 'ajuda').toString().toLowerCase();
     let systemPrompt = PROMPTS[promptMode] || PROMPTS['ajuda'];
     // Adiciona instrução explícita de idioma
-    const languageInstruction = `IMPORTANTE:(Você está no modo ${language}) Responda sempre nesse idioma ${language}, mesmo se a mensagem for em um idioma diferente, e caso mandem outro idioma avise ("Estou no Modo ${language} (fale a língua completa)"). Não traduza para outro idioma, mesmo que solicitado. Seja natural e fluente.`;
+    const languageInstruction = `IMPORTANTE:(Você está no modo ${language}) Responda sempre nesse idioma ${language}, mesmo se a mensagem for em um idioma diferente. Não traduza para outro idioma, mesmo que solicitado. Seja natural e fluente.`;
     systemPrompt = `${languageInstruction}\n${systemPrompt}`;
     // Se o modo for 'serio' e também houver outro modo, concatene o prompt sério ANTES do prompt do outro modo
     if (promptMode === 'serio' && prompt && prompt._originalMode && PROMPTS[prompt._originalMode]) {
