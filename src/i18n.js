@@ -184,18 +184,26 @@ function updateWelcomeMessage(language) {
     }
 }
 
-// Função para configurar o listener de mudança de idioma
-export function setupLanguageChangeListener() {
-    const languageDropdown = document.getElementById('language-dropdown');
-    if (languageDropdown) {
-        languageDropdown.addEventListener('change', (e) => {
-            const selectedLanguage = e.target.value;
-            localStorage.setItem('language', selectedLanguage);
-            // Recarregar a página para garantir atualização total do idioma
-            window.location.reload();
-        });
-    }
+function showSkeletonLoader() {
+    if (document.getElementById('wilb-skeleton-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'wilb-skeleton-overlay';
+    overlay.innerHTML = `
+      <img id="wilb-skeleton-img" src="/images/WilbAvatar.png" alt="Wilb girando" />
+      <div id="wilb-skeleton-text">Carregando...</div>
+    `;
+    document.body.appendChild(overlay);
 }
+
+// Exibe o skeleton Wilb ao abrir a página pela primeira vez
+window.addEventListener('DOMContentLoaded', () => {
+        showSkeletonLoader();
+        setTimeout(() => {
+            const overlay = document.getElementById('wilb-skeleton-overlay');
+            if (overlay) overlay.remove();
+            sessionStorage.setItem('wilbSplashShown', '1');
+        }, 2000);
+});
 
 // Função para inicializar o sistema de i18n
 export function initializeI18n() {
