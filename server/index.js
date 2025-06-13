@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
 
-// Configurar variáveis de ambiente
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,15 +13,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Sistema de Cache em Memória
 class ResponseCache {
-    constructor(maxSize = 1000, ttl = 3600000) { // TTL padrão: 1 hora
+    constructor(maxSize = 1000, ttl = 3600000) {
         this.cache = new Map();
         this.maxSize = maxSize;
         this.ttl = ttl;
     }
 
-    // Gera uma chave única baseada no conteúdo da requisição
     generateKey(prompt, mode, conversationHistory, hasImage) {
         const content = {
             prompt: prompt?.trim(),
@@ -37,20 +34,17 @@ class ResponseCache {
         const item = this.cache.get(key);
         if (!item) return null;
 
-        // Verifica se o item expirou
         if (Date.now() > item.expiry) {
             this.cache.delete(key);
             return null;
         }
 
-        // Move para o final (LRU)
         this.cache.delete(key);
         this.cache.set(key, item);
         return item.data;
     }
 
     set(key, data) {
-        // Remove itens antigos se atingir o limite
         if (this.cache.size >= this.maxSize) {
             const firstKey = this.cache.keys().next().value;
             this.cache.delete(firstKey);
@@ -76,10 +70,8 @@ class ResponseCache {
     }
 }
 
-// Instância do cache
 const responseCache = new ResponseCache();
 
-// Configurações dos prompts centralizadas
 const PROMPTS = {
     ajuda: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um tutor didático que ajuda com exercícios sem dar respostas diretas. Guie o aluno através de perguntas e dicas para que ele chegue à resposta sozinho. Seja paciente e encorajador. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para destacar fórmulas matemáticas (use blocos de código ou sintaxe LaTeX), listas, tópicos importantes, exemplos e destaques.",
     dicas: "PERSONALIDADE DO ASSISTENTE: Você é o Wilb, um companheiro de estudos amigável, positivo e encorajador, com um chapéu de cangaceiro. Use emojis como 💜 e ✨ para criar um tom leve e motivador. Seu objetivo é fazer o aluno se sentir apoiado e confiante. Chame o aluno de 'meu caro' ou 'minha cara' de vez em quando. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um conselheiro de estudos que oferece técnicas de aprendizagem, organização e motivação. Foque em métodos práticos e personalizados para melhorar o desempenho acadêmico. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para listas, destaques, exemplos e dicas práticas.",
@@ -89,7 +81,6 @@ const PROMPTS = {
     serio: "ATENÇÃO: Dois prompts de personalidade podem ser enviados juntos, mas neste modo você deve IGNORAR QUALQUER OUTRA PERSONALIDADE considerar APENAS esta personalidade séria. PERSONALIDADE DO ASSISTENTE: Você é Wilb, um tutor objetivo, formal. NÃO use emojis, emotes ou qualquer tipo de informalidade. Fale de forma clara, profissional e sem rodeios, SEM NENHUM EMOTE. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor sério sem brincadeiras ou informalidade. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas matemáticas, listas, tabelas, exemplos e destaques. Use blocos de código para fórmulas e sintaxe LaTeX quando apropriado."
 };
 
-// Middleware
 app.use(cors({
     origin: '*',
     credentials: true
@@ -98,10 +89,8 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Servir arquivos estáticos do build do Vite
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// Rotas da API
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
@@ -143,20 +132,18 @@ app.get('/api/config', (req, res) => {
     });
 });
 
-// Função auxiliar para chamar a API Gemini
 async function callGeminiAPI(prompt, image, mode, conversationHistory, language = 'pt-br') {
     let promptMode = (mode || 'ajuda').toString().toLowerCase();
     let systemPrompt = PROMPTS[promptMode] || PROMPTS['ajuda'];
-    // Adiciona instrução explícita de idioma
+
     const languageInstruction = `IMPORTANTE:(Você está no modo ${language}) Responda sempre nesse idioma ${language}, mesmo se a mensagem for em um idioma diferente. Não traduza para outro idioma, mesmo que solicitado. Seja natural e fluente.`;
     systemPrompt = `${languageInstruction}\n${systemPrompt}`;
-    // Se o modo for 'serio' e também houver outro modo, concatene o prompt sério ANTES do prompt do outro modo
+
     if (promptMode === 'serio' && prompt && prompt._originalMode && PROMPTS[prompt._originalMode]) {
         systemPrompt = `${languageInstruction}\n${PROMPTS['serio']}\n${PROMPTS[prompt._originalMode]}`;
     }
     const systemInstruction = { parts: [{ text: systemPrompt }] };
     
-    // Monta o histórico de conversa
     let historyForAPI = [];
     if (conversationHistory && Array.isArray(conversationHistory)) {
         historyForAPI = conversationHistory.map(message => ({
@@ -165,7 +152,6 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory, language 
         }));
     }
 
-    // Monta a mensagem do usuário
     let userParts = [{ text: prompt || 'Por favor, analise a imagem.' }];
     if (image) {
         userParts.push({ inlineData: { mimeType: 'image/png', data: image } });
@@ -177,7 +163,6 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory, language 
         systemInstruction
     };
 
-    // Chama a API Gemini
     const fetch = (await import('node-fetch')).default;
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
 
@@ -201,7 +186,6 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory, language 
     return 'Não consegui gerar uma resposta.';
 }
 
-// Rota principal para geração de respostas com cache
 app.post('/api/gemini/generate', async (req, res) => {
     try {
         const { prompt, image, mode, conversationHistory, seriousMode, language } = req.body;
@@ -213,7 +197,13 @@ app.post('/api/gemini/generate', async (req, res) => {
             });
         }
 
-        // Novo tratamento do modo sério
+        if (typeof prompt === 'string' && prompt.length > 5000) {
+            return res.status(400).json({
+                success: false,
+                error: 'O texto enviado excede o limite máximo de 5000 caracteres.'
+            });
+        }
+
         let promptMode = mode;
         if (seriousMode === true) {
             promptMode = 'serio';
@@ -260,7 +250,6 @@ app.post('/api/gemini/generate', async (req, res) => {
     }
 });
 
-// Rota para estatísticas incluindo cache
 app.get('/api/stats', (req, res) => {
     res.json({
         totalUsers: 1250,
@@ -272,7 +261,6 @@ app.get('/api/stats', (req, res) => {
     });
 });
 
-// Rota para gerenciar cache (desenvolvimento/debug)
 app.post('/api/cache/clear', (req, res) => {
     if (process.env.NODE_ENV === 'development') {
         responseCache.clear();
@@ -282,12 +270,10 @@ app.post('/api/cache/clear', (req, res) => {
     }
 });
 
-// Fallback para SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-// Middleware de tratamento de erros
 app.use((err, req, res, next) => {
     console.error('Erro no servidor:', err);
     res.status(500).json({
@@ -297,7 +283,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Iniciar servidor
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     console.log(`📱 Assistente de Estudos IA - Versão 1.1.0`);

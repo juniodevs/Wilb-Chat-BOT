@@ -833,7 +833,6 @@ function afterFirebaseInit(firebaseFns) {
     // Initialize app state
     initializeState();
 
-    // --- Conversation Mode Logic ---
     const conversationModeSwitch = document.getElementById('conversation-mode-switch');
     const conversationModeLabel = document.getElementById('conversation-mode-label');
 
@@ -845,7 +844,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // Load saved conversation mode preference
     const savedConversationMode = localStorage.getItem('conversationMode');
     if (savedConversationMode === 'serious') {
         conversationModeSwitch.checked = true;
@@ -861,14 +859,12 @@ function afterFirebaseInit(firebaseFns) {
         updateConversationModeLabel();
     });
 
-    // --- Inicializar sistema de internacionalização ---
     initializeI18n();
 }
 
 initializeFirebase();
 
 
-// --- Dark Mode Logic ---
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const body = document.body;
 
@@ -908,3 +904,24 @@ if (savedTheme === 'dark') {
 }
 
 darkModeToggle.addEventListener('click', toggleDarkMode);
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('message-input');
+    const counter = document.getElementById('char-counter');
+    const maxHeight = 160;
+    if (textarea) {
+        function autoResize() {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
+        }
+        textarea.addEventListener('input', function() {
+            autoResize();
+            if (counter) {
+                counter.textContent = `${textarea.value.length}/4000`;
+            }
+        });
+        autoResize();
+        if (counter) {
+            counter.textContent = `${textarea.value.length}/4000`;
+        }
+    }
+});
