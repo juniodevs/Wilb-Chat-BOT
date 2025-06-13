@@ -37,7 +37,27 @@ export const translations = {
     withYourFriend: "Assistente de Estudo com seu amigo Wilb",
     login: "Entrar",
     normal: "Normal",
-    serious: "Sério"
+    serious: "Sério",
+    suggestions: [
+      'Me ajude a revisar matemática básica',
+      'Como posso estudar melhor para provas?',
+      'Explique a fotossíntese de forma simples',
+      'Quais são dicas para organizar meus estudos?',
+      'Me dê um exemplo de redação nota 1000',
+      'Como funciona a Revolução Francesa?',
+      'Sugira técnicas para memorizar conteúdos',
+      'Qual a diferença entre mitose e meiose?',
+      'Como criar um cronograma de estudos?',
+      'Explique o que é energia cinética',
+      'Como melhorar minha concentração?',
+      'Me ajude com um exercício de física',
+      'O que é um texto dissertativo?',
+      'Como fazer um resumo eficiente?',
+      'Me explique a tabela periódica',
+      'Dicas para ENEM',
+      'Como estudar redação?',
+      'Como revisar conteúdos rapidamente?'
+    ]
   },
   'en': {
     welcome: "Hi! I'm Wilb, your study companion 💜✨\nShall we rock together?",
@@ -77,7 +97,27 @@ export const translations = {
     withYourFriend: "Study Assistant with his friend Wilb",
     login: "Enter",
     normal: "Normal",
-    serious: "Serious"
+    serious: "Serious",
+    suggestions: [
+      'Help me review basic math',
+      'How can I study better for exams?',
+      'Explain photosynthesis in a simple way',
+      'What are some tips to organize my studies?',
+      'Give me an example of a perfect essay',
+      'How did the French Revolution work?',
+      'Suggest techniques to memorize content',
+      'What is the difference between mitosis and meiosis?',
+      'How to create a study schedule?',
+      'Explain what kinetic energy is',
+      'How to improve my concentration?',
+      'Help me with a physics exercise',
+      'What is a discursive text?',
+      'How to make an efficient summary?',
+      'Explain the periodic table to me',
+      'Tips for SAT/ENEM',
+      'How to study essay writing?',
+      'How to review content quickly?'
+    ]
   }
 };
 

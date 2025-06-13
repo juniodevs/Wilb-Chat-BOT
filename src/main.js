@@ -643,32 +643,17 @@ function afterFirebaseInit(firebaseFns) {
     };
 
     // --- SUGESTÕES ALEATÓRIAS ---
-    const SUGGESTIONS = [
-        'Me ajude a revisar matemática básica',
-        'Como posso estudar melhor para provas?',
-        'Explique a fotossíntese de forma simples',
-        'Quais são dicas para organizar meus estudos?',
-        'Me dê um exemplo de redação nota 1000',
-        'Como funciona a Revolução Francesa?',
-        'Sugira técnicas para memorizar conteúdos',
-        'Qual a diferença entre mitose e meiose?',
-        'Como criar um cronograma de estudos?',
-        'Explique o que é energia cinética',
-        'Como melhorar minha concentração?',
-        'Me ajude com um exercício de física',
-        'O que é um texto dissertativo?',
-        'Como fazer um resumo eficiente?',
-        'Me explique a tabela periódica',
-        'Dicas para ENEM',
-        'Como estudar redação?',
-        'Como revisar conteúdos rapidamente?'
-    ];
+    function getSuggestions() {
+        const currentLanguage = getCurrentLanguage();
+        return getTranslation('suggestions', currentLanguage) || [];
+    }
 
     function renderSuggestions() {
         const bar = document.getElementById('suggestions-bar');
         if (!bar) return;
         bar.innerHTML = '';
-        const shuffled = SUGGESTIONS.sort(() => 0.5 - Math.random());
+        const suggestions = getSuggestions();
+        const shuffled = suggestions.sort(() => 0.5 - Math.random());
         shuffled.slice(0, 2).forEach(suggestion => {
             const btn = document.createElement('button');
             btn.className = 'suggestion-btn';

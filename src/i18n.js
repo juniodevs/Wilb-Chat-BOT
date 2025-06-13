@@ -191,8 +191,8 @@ export function setupLanguageChangeListener() {
         languageDropdown.addEventListener('change', (e) => {
             const selectedLanguage = e.target.value;
             localStorage.setItem('language', selectedLanguage);
-            // Atualizar a UI imediatamente
-            updateLanguageUI();
+            // Recarregar a página para garantir atualização total do idioma
+            window.location.reload();
         });
     }
 }
