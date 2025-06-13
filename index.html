@@ -17,7 +17,7 @@
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm message-appear relative">
             <button id="close-login-modal-btn" class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors" aria-label="Fechar Modal">&times;</button>
             
-            <img src="images/WilbAvatar.png" alt="Wilb Logo" class="mx-auto mb-4 rounded-full w-20 h-20">
+            <img src="images/WilbMainImage.jpg" alt="Wilb Logo" class="mx-auto mb-4 rounded-full w-20 h-20">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Bem-vindo ao Assistente! Wilb</h2>
             <p class="text-slate-500 mb-6">Faça login para salvar seu progresso ou continue como anônimo.</p>
             <div class="space-y-3">
@@ -35,7 +35,7 @@
     <div id="app-container" class="w-screen h-screen flex flex-col overflow-hidden">
         <header class="bg-slate-800 text-white p-4 flex items-center justify-between shadow-md z-20 w-full">
             <div class="flex items-center gap-4">
-                <img src="/images/WilbAvatar.png" alt="Logo Wilb" class="w-8 h-8 rounded-full mr-2">
+                <img src="/images/WilbMainImage.jpg" alt="Logo Wilb" class="w-8 h-8 rounded-full mr-2">
                 <button id="menu-toggle-btn" class="md:hidden p-2 -ml-2 rounded-md hover:bg-slate-700">
                     <i class="fa-solid fa-bars text-xl"></i>
                 </button>
@@ -53,7 +53,7 @@
                     <label for="language-dropdown" class="text-white text-sm">Idioma:</label>
                     <select id="language-dropdown" class="bg-slate-700 text-white text-sm rounded-md focus:outline-none">
                         <option value="pt-br" selected>Português</option>
-                        <option value="en-us">English</option>
+                        <option value="en">English</option>
                     </select>
                 </div>
                 <div id="user-info-container" class="relative">
@@ -157,18 +157,5 @@
     </div>
 
     <script type="module" src="/src/main.js"></script>
-    <script>
-        const languageDropdown = document.getElementById('language-dropdown');
-
-        // Load saved language preference
-        const savedLanguage = localStorage.getItem('language') || 'pt-br';
-        languageDropdown.value = savedLanguage;
-
-        // Save language preference on change
-        languageDropdown.addEventListener('change', () => {
-            const selectedLanguage = languageDropdown.value;
-            localStorage.setItem('language', selectedLanguage);
-        });
-    </script>
 </body>
 </html>

@@ -1,6 +1,7 @@
 // Importar estilos
 import './style.css'
 import { initThemeTransition } from './themeManager.js'
+import { initializeI18n, updateLanguageUI, getTranslation, getCurrentLanguage } from './i18n.js'
 
 // Inicializar o gerenciador de tema imediatamente
 initThemeTransition();
@@ -128,12 +129,13 @@ function afterFirebaseInit(firebaseFns) {
     initThemeTransition();
 
     const showWelcomeMessage = () => {
+        const welcomeText = getTranslation('welcome').split('\n');
         chatWindow.innerHTML = `
             <div class="flex items-start gap-3 justify-start mb-6 message-appear">
                 <img src="${WILB_IMAGE_URL}" alt="Ícone do Wilb" class="w-10 h-10 rounded-full bg-slate-200">
                 <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">
-                    <p>Oi! Eu sou o Wilb, seu companheiro de estudos 💜✨</p>
-                    <p>Vamos arrasar juntos?</p>
+                    <p>${welcomeText[0]}</p>
+                    <p>${welcomeText[1]}</p>
                 </div>
             </div>`;
         renderSuggestions();
@@ -143,8 +145,8 @@ function afterFirebaseInit(firebaseFns) {
         chatWindow.innerHTML = `
             <div class="flex flex-col items-center justify-center h-full text-center text-slate-500 message-appear">
                 <i class="fa-regular fa-comments text-5xl mb-4"></i>
-                <h3 class="text-lg font-semibold">Este chat está vazio.</h3>
-                <p class="text-sm">Envie uma mensagem ou uma imagem para começar a conversa.</p>
+                <h3 class="text-lg font-semibold">${getTranslation('emptyChatTitle')}</h3>
+                <p class="text-sm">${getTranslation('emptyChatSubtitle')}</p>
             </div>`;
     };
 
@@ -192,8 +194,8 @@ function afterFirebaseInit(firebaseFns) {
 
         if (displayHistory.length === 0) {
             const message = currentUser?.isAnonymous
-                ? 'Seu histórico não é salvo no modo anônimo.'
-                : 'Seu histórico aparecerá aqui.';
+                ? getTranslation('anonymousHistoryWarning')
+                : getTranslation('historyPlaceholder');
             historyList.innerHTML = `<div class="text-center text-sm text-slate-500 mt-4 px-2">${message}</div>`;
             return;
         }
@@ -272,8 +274,8 @@ function afterFirebaseInit(firebaseFns) {
             console.error("Error loading history:", error);
             historyList.innerHTML = `
                 <div class="p-4 text-center text-sm text-red-700 bg-red-100 rounded-lg">
-                    <p class="font-bold mb-2">Erro ao carregar o histórico!</p>
-                    <p>Verifique se as <strong class="underline">Regras de Segurança</strong> do seu banco de dados Firestore estão configuradas corretamente.</p>
+                    <p class="font-bold mb-2">${getTranslation('errorLoadingHistory')}</p>
+                    <p>${getTranslation('firestoreSecurityRules')}</p>
                 </div>`;
         });
     };
@@ -423,23 +425,25 @@ function afterFirebaseInit(firebaseFns) {
             }
         }
 
+        // Obter idioma atual usando a função do sistema de i18n
+        const currentLanguage = getCurrentLanguage();
+
         const payload = {
             conversationHistory,
             prompt: newText,
             image: newBase64ImageData,
             mode: currentMode,
             seriousMode,
+            language: currentLanguage // Incluir idioma na requisição
         };
-        
-        const language = localStorage.getItem('language') || 'pt-BR';
 
         const response = await fetch('/api/gemini/generate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept-Language': language
+                'Accept-Language': currentLanguage
             },
-            body: JSON.stringify({ ...payload, language })
+            body: JSON.stringify(payload)
         });
 
         if (!response.ok) {
@@ -850,9 +854,9 @@ function afterFirebaseInit(firebaseFns) {
 
     const updateConversationModeLabel = () => {
         if (conversationModeSwitch.checked) {
-            conversationModeLabel.textContent = 'Sério';
+            conversationModeLabel.textContent = getTranslation('serious');
         } else {
-            conversationModeLabel.textContent = 'Normal';
+            conversationModeLabel.textContent = getTranslation('normal');
         }
     };
 
@@ -871,6 +875,9 @@ function afterFirebaseInit(firebaseFns) {
         localStorage.setItem('conversationMode', mode);
         updateConversationModeLabel();
     });
+
+    // --- Inicializar sistema de internacionalização ---
+    initializeI18n();
 }
 
 initializeFirebase();
