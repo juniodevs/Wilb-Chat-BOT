@@ -195,6 +195,22 @@ function showSkeletonLoader() {
     document.body.appendChild(overlay);
 }
 
+// Função para configurar o listener de mudança de idioma
+export function setupLanguageChangeListener() {
+    const languageDropdown = document.getElementById('language-dropdown');
+    if (languageDropdown) {
+        languageDropdown.addEventListener('change', (e) => {
+            const selectedLanguage = e.target.value;
+            localStorage.setItem('language', selectedLanguage);
+            // Atualizar a UI com o novo idioma
+            showSkeletonLoader();
+            sessionStorage.setItem('wilbSplashShown', '0');
+            updateLanguageUI();
+            window.location.reload();
+        });
+    }
+}
+
 // Exibe o skeleton Wilb ao abrir a página pela primeira vez
 window.addEventListener('DOMContentLoaded', () => {
         showSkeletonLoader();
