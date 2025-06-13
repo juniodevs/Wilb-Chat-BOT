@@ -29,37 +29,48 @@ Este projeto oferece uma experiência de aprendizado personalizada e interativa,
 * **Upload de imagens**: Análise de imagens pela IA
 * **Histórico persistente**: Armazenamento via Firestore ou localStorage
 
----
+--
 
 ## 🛣️ Roadmap
 
 * [x] Configuração inicial com Vite e Node.js
 * [x] Integração com Firebase Auth
-* [x] Implementação de APIs básicas (`status`, `info`, `config`, `stats`)
+* [x] Implementação de APIs básicas (`info`, `config`)
 * [x] Integração com a API do Google Gemini
 * [x] Upload e análise de imagens
 * [x] Interface com Tailwind CSS
 * [x] Histórico de perguntas e respostas
 * [x] Modos de estudo variados (exercícios, dicas, explicações)
-
-A partir daqui, o projeto está aberto para contribuição da comunidade!
-
 * [x] Sistema de cache para respostas da IA (em testes)
-* [X] Dark Mode
-* [X] Suporte a múltiplos idiomas
+* [x] Dark Mode
+* [x] Suporte a múltiplos idiomas
+
+---
+
+### Em andamento e próximas entregas
+
 * [ ] Implementação de design responsivo
-* [ ] Correções de bugs e melhorias de segurança
-* [ ] Sons e animações
-* [ ] Responsividade total em dispositivos móveis
 * [ ] Melhorias na interface e usabilidade
+* [ ] Correções de bugs e melhorias de segurança
+* [ ] Autenticação avançada (e-mail/senha, etc.)
 * [ ] Testes unitários e de integração
 * [ ] Documentação completa do código
-* [ ] Autenticação avançada (e-mail/senha, etc.)
 * [ ] Otimização de performance e segurança
+* [ ] Suporte a mais idiomas
+* [ ] Sistema de feedback dos usuários
 * [ ] Notificações em tempo real
 * [ ] Painel administrativo
-* [ ] Aprimoramento da análise de imagens com IA
-* [ ] Sistema de feedback dos usuários
+* [ ] Sons e animações (com acessibilidade e opção de desativar)
+
+### Opcionais (futuras versões)
+
+* [ ] Integração com plataformas de ensino (Moodle, Google Classroom, etc.)
+* [ ] Modo de estudo colaborativo
+* [ ] Suporte a plugins e extensões
+* [ ] Análise de desempenho do usuário
+* [ ] Integração com outras APIs educacionais
+* [ ] Integração com governos e instituições educacionais
+
 ---
 
 ## 📦 Instalação
@@ -128,9 +139,8 @@ wilbchatbot/
 
 ## 🔧 Endpoints Disponíveis
 
-* `GET /api/health` – Verifica o status do servidor
 * `GET /api/info` – Retorna informações do sistema
-* `GET /api/stats` – Estatísticas de uso
+* `GET /api/config` – Retorna configurações do bot
 
 ---
 
