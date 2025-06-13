@@ -620,7 +620,7 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(255,255,255);
+  background: rgb(33, 28, 50);
   display: flex;
   flex-direction: column;
   align-items: center;

@@ -189,9 +189,7 @@ function showSkeletonLoader() {
     const overlay = document.createElement('div');
     overlay.id = 'wilb-skeleton-overlay';
     overlay.innerHTML = `
-      <img id="wilb-skeleton-img" src="/images/WilbAvatar.png" alt="Wilb girando" />
-      <div id="wilb-skeleton-text">Carregando...</div>
-    `;
+      <img id="wilb-skeleton-img" src="/images/WilbAvatar.png" alt="Wilb girando" />`;
     document.body.appendChild(overlay);
 }
 
