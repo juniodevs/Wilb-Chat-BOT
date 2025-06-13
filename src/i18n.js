@@ -63,7 +63,20 @@ function updateStaticTexts(language) {
     elements.forEach(({ selector, key, text }) => {
         const element = document.querySelector(selector);
         if (element) {
-            if (text) {
+            if (selector === 'footer span:first-child' && key === 'createdBy') {
+                // Atualiza o texto para (Júnior Veras), mantendo o <a>
+                const link = element.querySelector('a');
+                if (link) {
+                    // Remove todos os nós de texto antes do link
+                    while (element.firstChild && element.firstChild !== link) {
+                        element.removeChild(element.firstChild);
+                    }
+                    // Atualiza o texto antes do link
+                    element.insertBefore(document.createTextNode('Criado por '), link);
+                } else {
+                    element.textContent = '(Júnior Veras)';
+                }
+            } else if (text) {
                 element.textContent = text;
             } else if (key) {
                 element.textContent = getTranslation(key);
@@ -184,15 +197,6 @@ function updateWelcomeMessage(language) {
     }
 }
 
-function showSkeletonLoader() {
-    if (document.getElementById('wilb-skeleton-overlay')) return;
-    const overlay = document.createElement('div');
-    overlay.id = 'wilb-skeleton-overlay';
-    overlay.innerHTML = `
-      <img id="wilb-skeleton-img" src="/images/WilbAvatar.png" alt="Wilb girando" />`;
-    document.body.appendChild(overlay);
-}
-
 // Função para configurar o listener de mudança de idioma
 export function setupLanguageChangeListener() {
     const languageDropdown = document.getElementById('language-dropdown');
@@ -200,22 +204,112 @@ export function setupLanguageChangeListener() {
         languageDropdown.addEventListener('change', (e) => {
             const selectedLanguage = e.target.value;
             localStorage.setItem('language', selectedLanguage);
-            // Atualizar a UI com o novo idioma
-            updateLanguageUI();
-            window.location.reload();
+            // Exibir skeleton antes do reload
+            showSkeletonLoader();
+            setTimeout(() => {
+                window.location.reload();
+            }, 600); // Pequeno delay para o skeleton aparecer
         });
     }
 }
 
+function showSkeletonLoader() {
+    if (document.getElementById('wilb-skeleton-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'wilb-skeleton-overlay';
+    overlay.innerHTML = `
+      <img id="wilb-skeleton-img" src="/images/WilbAvatar.png" alt="Wilb girando" />
+      <div id="wilb-skeleton-text">Carregando...</div>
+    `;
+    document.body.appendChild(overlay);
+}
+
 // Exibe o skeleton Wilb ao abrir a página pela primeira vez
 window.addEventListener('DOMContentLoaded', () => {
-        showSkeletonLoader();
+    if (!sessionStorage.getItem('wilbSplashShown')) {
+        showWilbSplashSkeleton();
         setTimeout(() => {
-            const overlay = document.getElementById('wilb-skeleton-overlay');
-            if (overlay) overlay.remove();
+            removeWilbSplashSkeleton();
             sessionStorage.setItem('wilbSplashShown', '1');
         }, 2000);
+    }
 });
+
+function showWilbSplashSkeleton() {
+    if (document.getElementById('wilb-skeleton-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'wilb-skeleton-overlay';
+    overlay.innerHTML = `
+      <img id="wilb-skeleton-img" src="/images/WilbAvatar.png" alt="Wilb girando" />
+      <div id="wilb-skeleton-text">Carregando...</div>
+    `;
+    document.body.appendChild(overlay);
+    // Adiciona skeletons nos principais blocos
+    addSkeletonsToMainBlocks();
+}
+
+function removeWilbSplashSkeleton() {
+    const overlay = document.getElementById('wilb-skeleton-overlay');
+    if (overlay) overlay.remove();
+    removeSkeletonsFromMainBlocks();
+}
+
+function addSkeletonsToMainBlocks() {
+    // Chat window
+    const chatWindow = document.getElementById('chat-window');
+    if (chatWindow) {
+        chatWindow.innerHTML = `<div class="skeleton" style="height: 120px; width: 100%; margin-bottom: 16px;"></div>
+        <div class="skeleton" style="height: 80px; width: 80%; margin-bottom: 12px;"></div>
+        <div class="skeleton" style="height: 40px; width: 60%;"></div>`;
+    }
+    // History panel
+    const historyList = document.getElementById('history-list');
+    if (historyList) {
+        historyList.innerHTML = `<div class="skeleton" style="height: 32px; width: 90%; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 32px; width: 70%; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 32px; width: 80%;"></div>`;
+    }
+    // Sugestões
+    const suggestionsBar = document.getElementById('suggestions-bar');
+    if (suggestionsBar) {
+        suggestionsBar.innerHTML = `<div class="skeleton" style="height: 32px; width: 120px; margin-right: 8px;"></div>
+        <div class="skeleton" style="height: 32px; width: 100px;"></div>`;
+    }
+    // Input
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+        messageInput.classList.add('skeleton');
+        messageInput.disabled = true;
+    }
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) {
+        sendBtn.classList.add('skeleton');
+        sendBtn.disabled = true;
+    }
+}
+
+function removeSkeletonsFromMainBlocks() {
+    // Chat window
+    const chatWindow = document.getElementById('chat-window');
+    if (chatWindow) chatWindow.innerHTML = '';
+    // History panel
+    const historyList = document.getElementById('history-list');
+    if (historyList) historyList.innerHTML = '';
+    // Sugestões
+    const suggestionsBar = document.getElementById('suggestions-bar');
+    if (suggestionsBar) suggestionsBar.innerHTML = '';
+    // Input
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+        messageInput.classList.remove('skeleton');
+        messageInput.disabled = false;
+    }
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) {
+        sendBtn.classList.remove('skeleton');
+        sendBtn.disabled = false;
+    }
+}
 
 // Função para inicializar o sistema de i18n
 export function initializeI18n() {
@@ -229,4 +323,3 @@ export function initializeI18n() {
     // Configurar o listener para mudanças de idioma
     setupLanguageChangeListener();
 }
-

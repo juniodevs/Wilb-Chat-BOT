@@ -641,3 +641,13 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
+
+.footer-link {
+    color: #ffb300;
+    font-weight: 600;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+.footer-link:hover {
+    color: #ffd54f;
+}
