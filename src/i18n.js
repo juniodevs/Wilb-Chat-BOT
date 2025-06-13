@@ -203,8 +203,6 @@ export function setupLanguageChangeListener() {
             const selectedLanguage = e.target.value;
             localStorage.setItem('language', selectedLanguage);
             // Atualizar a UI com o novo idioma
-            showSkeletonLoader();
-            sessionStorage.setItem('wilbSplashShown', '0');
             updateLanguageUI();
             window.location.reload();
         });

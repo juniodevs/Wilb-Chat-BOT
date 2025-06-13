@@ -95,7 +95,7 @@ export const translations = {
     english: "English",
     darkMode: "Dark Mode",
     withYourFriend: "Study Assistant with his friend Wilb",
-    login: "Enter",
+    login: "Sign In",
     normal: "Normal",
     serious: "Serious",
     suggestions: [
