@@ -44,6 +44,7 @@ Este projeto oferece uma experiência de aprendizado personalizada e interativa,
 * [x] Sistema de cache para respostas da IA (em testes)
 * [x] Dark Mode
 * [x] Suporte a múltiplos idiomas
+* [X] Autenticação avançada (e-mail/senha, etc.)
 
 ---
 
@@ -52,7 +53,6 @@ Este projeto oferece uma experiência de aprendizado personalizada e interativa,
 * [ ] Implementação de design responsivo
 * [ ] Melhorias na interface e usabilidade
 * [ ] Correções de bugs e melhorias de segurança
-* [ ] Autenticação avançada (e-mail/senha, etc.)
 * [ ] Testes unitários e de integração
 * [ ] Documentação completa do código
 * [ ] Otimização de performance e segurança

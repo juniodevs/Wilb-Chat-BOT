@@ -1,12 +1,9 @@
-// Importar estilos
 import './style.css'
 import { initThemeTransition } from './themeManager.js'
 import { initializeI18n, updateLanguageUI, getTranslation, getCurrentLanguage } from './i18n.js'
 
-// Inicializar o gerenciador de tema imediatamente
 initThemeTransition();
 
-// --- Firebase Config ---
 let app, auth, db, googleProvider;
 
 async function initializeFirebase() {
@@ -14,7 +11,7 @@ async function initializeFirebase() {
     const config = await response.json();
     const firebaseConfig = config.firebase;
     const { initializeApp } = await import('firebase/app');
-    const { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut } = await import('firebase/auth');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } = await import('firebase/auth');
     const { getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = await import('firebase/firestore');
 
     app = initializeApp(firebaseConfig);
@@ -27,6 +24,10 @@ async function initializeFirebase() {
         signInAnonymously,
         onAuthStateChanged,
         signOut,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        updateProfile,
+        sendPasswordResetEmail,
         collection,
         doc,
         addDoc,
@@ -41,9 +42,8 @@ async function initializeFirebase() {
 }
 
 function afterFirebaseInit(firebaseFns) {
-    const { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = firebaseFns;
+    const { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = firebaseFns;
 
-    // --- DOM Elements ---
     const loginModal = document.getElementById('login-modal');
     const loginGoogleBtn = document.getElementById('login-google-btn');
     const loginAnonBtn = document.getElementById('login-anon-btn');
@@ -73,14 +73,16 @@ function afterFirebaseInit(firebaseFns) {
     const menuToggleBtn = document.getElementById('menu-toggle-btn');
     const historyOverlay = document.getElementById('history-overlay');
     const closeLoginModalBtn = document.getElementById('close-login-modal-btn');
+    const forgotPasswordModal = document.getElementById('forgot-password-modal');
+    const showForgotPasswordModalBtn = document.getElementById('show-forgot-password-modal');
+    const closeForgotPasswordModalBtn = document.getElementById('close-forgot-password-modal-btn');
+    const backToLoginModalBtn = document.getElementById('back-to-login-modal');
 
-    // --- Constants ---
     const WILB_IMAGE_URL = '/images/WilbAvatar.png';
     const WILB_IMAGE_URL_ANON = '/images/WilbAvatarAnon.png';
     const WILB_POPUP_IMAGE = '/images/WilbMainImage.jpg';
     const DEFAULT_AVATAR_URL = WILB_IMAGE_URL_ANON;
 
-    // --- State ---
     let currentUser = null;
     let imageBase64 = null;
     let currentChatId = null;
@@ -89,7 +91,6 @@ function afterFirebaseInit(firebaseFns) {
     let contextTargetId = null;
     let unsubscribeHistory = null;
 
-    // Cache local para perguntas frequentes
     const localCache = {
         responses: new Map(),
         maxSize: 50,
@@ -122,10 +123,8 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Utility Functions ---
     const scrollToBottom = () => chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
 
-    // Inicializar o gerenciador de tema
     initThemeTransition();
 
     const showWelcomeMessage = () => {
@@ -154,7 +153,6 @@ function afterFirebaseInit(firebaseFns) {
         sendBtn.disabled = !(messageInput.value.trim() || imageBase64);
     };
 
-    // --- UI Functions ---
     const updateUIForUser = (user) => {
         if (user) {
             loginModal.style.display = 'none';
@@ -233,14 +231,13 @@ function afterFirebaseInit(firebaseFns) {
                 renameInput.select();
                 renameInput.addEventListener('blur', () => exitRenameMode(item.id, renameInput.value));
                 renameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') exitRenameMode(item.id, renameInput.value);
+                    if (e.key === 'Enter') exitRenameMode(item.id, null);
                     if (e.key === 'Escape') exitRenameMode(item.id, null);
                 });
             }
         });
     };
 
-    // --- State Management ---
     const resetAppState = () => {
         if (unsubscribeHistory) unsubscribeHistory();
         unsubscribeHistory = null;
@@ -307,7 +304,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Authentication ---
     const handleSignOut = async () => {
         const isAnon = currentUser?.isAnonymous;
         if (isAnon) {
@@ -339,7 +335,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Image Handling ---
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -360,7 +355,6 @@ function afterFirebaseInit(firebaseFns) {
         updateSendButtonState();
     };
 
-    // --- Message Handling ---
     const displayMessage = (message) => {
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex items-start gap-3 mb-6 message-appear ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`;
@@ -383,7 +377,7 @@ function afterFirebaseInit(firebaseFns) {
 
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
-        // Renderiza LaTeX com MathJax
+
         if (window.MathJax && window.MathJax.typesetPromise) {
             window.MathJax.typesetPromise([messageDiv]);
         }
@@ -412,7 +406,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- API Communication ---
     const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
         const currentMode = modeSelect.value;
         const seriousMode = conversationModeSwitch && conversationModeSwitch.checked === true;
@@ -425,7 +418,6 @@ function afterFirebaseInit(firebaseFns) {
             }
         }
 
-        // Obter idioma atual usando a função do sistema de i18n
         const currentLanguage = getCurrentLanguage();
 
         const payload = {
@@ -434,7 +426,7 @@ function afterFirebaseInit(firebaseFns) {
             image: newBase64ImageData,
             mode: currentMode,
             seriousMode,
-            language: currentLanguage // Incluir idioma na requisição
+            language: currentLanguage 
         };
 
         const response = await fetch('/api/gemini/generate', {
@@ -455,12 +447,11 @@ function afterFirebaseInit(firebaseFns) {
         const result = await response.json();
 
         if (result && result.response) {
-            // Salva no cache local se não tem imagem
+
             if (!newBase64ImageData) {
                 localCache.set(newText, currentMode, result.response);
             }
 
-            // Log se veio do cache do servidor
             if (result.cached) {
                 console.log('Resposta veio do cache do servidor');
             }
@@ -471,7 +462,6 @@ function afterFirebaseInit(firebaseFns) {
         return "Não consegui gerar uma resposta.";
     };
 
-    // --- Chat Management ---
     const createNewChat = async (title, messages) => {
         if (!currentUser) return;
 
@@ -547,7 +537,6 @@ function afterFirebaseInit(firebaseFns) {
 
         showTypingIndicator();
 
-        // Esconde sugestões ao enviar a primeira mensagem
         const bar = document.getElementById('suggestions-bar');
         if (bar) bar.style.display = 'none';
 
@@ -577,7 +566,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Chat History Management ---
     const exitRenameMode = async (chatId, newTitle) => {
         const chatIndex = historyData.findIndex(c => c.id === chatId);
         if (chatIndex === -1) return;
@@ -642,7 +630,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- SUGESTÕES ALEATÓRIAS ---
     function getSuggestions() {
         const currentLanguage = getCurrentLanguage();
         return getTranslation('suggestions', currentLanguage) || [];
@@ -668,7 +655,6 @@ function afterFirebaseInit(firebaseFns) {
         bar.style.display = 'flex';
     }
 
-    // --- MODO DE CONVERSA (NORMAL/SÉRIO) ---
     let conversationStyle = 'normal';
     const modeSwitch = document.getElementById('mode-switch');
     if (modeSwitch) {
@@ -677,21 +663,18 @@ function afterFirebaseInit(firebaseFns) {
         });
     }
 
-    // Altera o modo de conversa enviado para o backend
     function getCurrentPromptMode() {
-        // Se for modo sério, retorna 'serio', senão mantém selecionado
+
         if (conversationStyle === 'serio') return 'serio';
         return modeSelect.value;
     }
 
-    // --- State Initialization ---
     const initializeState = () => {
         updateSendButtonState();
         showWelcomeMessage();
         renderSuggestions();
     };
 
-    // --- Event Listeners ---
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         updateUIForUser(user);
@@ -709,7 +692,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Login/Logout events
     if (closeLoginModalBtn) {
         closeLoginModalBtn.addEventListener('click', () => {
             loginModal.style.display = 'none';
@@ -728,7 +710,6 @@ function afterFirebaseInit(firebaseFns) {
     loginAnonBtn.addEventListener('click', signInAnonymouslyFlow);
     logoutBtn.addEventListener('click', handleSignOut);
 
-    // Chat events
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         handleSendMessage();
@@ -746,7 +727,6 @@ function afterFirebaseInit(firebaseFns) {
     removeImageBtn.addEventListener('click', removeImage);
     newChatBtn.addEventListener('click', startNewChat);
 
-    // User menu dropdown
     userMenuButton.addEventListener('click', (e) => {
         e.stopPropagation();
         userMenuDropdown.classList.toggle('hidden');
@@ -758,7 +738,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Mobile menu toggle
     menuToggleBtn.addEventListener('click', () => {
         historyPanel.classList.toggle('-translate-x-full');
         historyOverlay.classList.toggle('hidden');
@@ -769,7 +748,6 @@ function afterFirebaseInit(firebaseFns) {
         historyOverlay.classList.add('hidden');
     });
 
-    // History item clicks
     historyList.addEventListener('click', (e) => {
         const historyItem = e.target.closest('.history-item');
         const optionsBtn = e.target.closest('.options-btn');
@@ -791,13 +769,11 @@ function afterFirebaseInit(firebaseFns) {
             const chatId = historyItem.dataset.id;
             loadChat(chatId);
 
-            // Close mobile menu
             historyPanel.classList.add('-translate-x-full');
             historyOverlay.classList.add('hidden');
         }
     });
 
-    // Context menu actions
     contextMenu.addEventListener('click', (e) => {
         const action = e.target.dataset.action;
         if (!action || !contextTargetId) return;
@@ -822,7 +798,6 @@ function afterFirebaseInit(firebaseFns) {
         contextTargetId = null;
     });
 
-    // Close context menu on outside click
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
             contextMenu.classList.add('hidden');
@@ -830,7 +805,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Initialize app state
     initializeState();
 
     const conversationModeSwitch = document.getElementById('conversation-mode-switch');
@@ -860,10 +834,105 @@ function afterFirebaseInit(firebaseFns) {
     });
 
     initializeI18n();
+
+    if (emailLoginForm) {
+        emailLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                currentUser = userCredential.user;
+                updateUIForUser(currentUser);
+                hideModal(emailLoginModal);
+                window.location.reload();
+            } catch (error) {
+                let msg = getTranslation('loginGenericError');
+                if (error.code === 'auth/user-not-found') msg = getTranslation('loginUserNotFound');
+                else if (error.code === 'auth/wrong-password') msg = getTranslation('loginWrongPassword');
+                else if (error.code === 'auth/invalid-email') msg = getTranslation('loginInvalidEmail');
+                else if (error.code === 'auth/too-many-requests') msg = getTranslation('loginTooManyRequests');
+                showLoginErrorModal(msg);
+            }
+        });
+    }
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+            if (password !== confirmPassword) {
+                alert(getTranslation('passwordMismatch') || 'As senhas não coincidem!');
+                return;
+            }
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                currentUser = userCredential.user;
+
+                if (name && updateProfile) {
+                    await updateProfile(currentUser, { displayName: name });
+                }
+                updateUIForUser(currentUser);
+                hideModal(signupModal);
+                showModal(emailLoginModal);
+                alert('Conta criada com sucesso! Faça login.');
+            } catch (error) {
+                let msg = 'Erro ao criar conta.';
+                if (error.code === 'auth/email-already-in-use') msg = 'Este email já está em uso.';
+                else if (error.code === 'auth/invalid-email') msg = 'Email inválido.';
+                else if (error.code === 'auth/weak-password') msg = 'A senha deve ter pelo menos 6 caracteres.';
+                alert(msg);
+            }
+        });
+    }
+
+    if (showForgotPasswordModalBtn) {
+        showForgotPasswordModalBtn.addEventListener('click', () => {
+            hideModal(emailLoginModal);
+            showModal(forgotPasswordModal);
+        });
+    }
+    if (closeForgotPasswordModalBtn) {
+        closeForgotPasswordModalBtn.addEventListener('click', () => {
+            hideModal(forgotPasswordModal);
+            showModal(emailLoginModal);
+        });
+    }
+    if (backToLoginModalBtn) {
+        backToLoginModalBtn.addEventListener('click', () => {
+            hideModal(forgotPasswordModal);
+            showModal(emailLoginModal);
+        });
+    }
+
+    const forgotPasswordForm = document.getElementById('forgot-password-form');
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            if (!email) return;
+            try {
+                let sendPasswordResetEmailFn = null;
+                if (typeof sendPasswordResetEmail === 'undefined') {
+                    const firebaseAuth = await import('firebase/auth');
+                    sendPasswordResetEmailFn = firebaseAuth.sendPasswordResetEmail;
+                } else {
+                    sendPasswordResetEmailFn = sendPasswordResetEmail;
+                }
+                await sendPasswordResetEmailFn(auth, email);
+                showForgotPasswordFeedbackModal(getTranslation('forgotPasswordSuccess') || 'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.', true);
+                hideModal(forgotPasswordModal);
+                showModal(emailLoginModal);
+            } catch (error) {
+                showForgotPasswordFeedbackModal(getTranslation('forgotPasswordError') || 'Erro ao tentar recuperar a senha. Tente novamente.', false);
+            }
+        });
+    }
 }
 
 initializeFirebase();
-
 
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const body = document.body;
@@ -890,14 +959,12 @@ const toggleDarkMode = () => {
     }
 };
 
-// Check for saved theme preference on load
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'dark') {
     enableDarkMode();
 } else if (savedTheme === 'light') {
     disableDarkMode();
 } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    // If no preference, check system preference
     enableDarkMode();
 } else {
     disableDarkMode();
@@ -925,3 +992,215 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+const loginModal = document.getElementById('login-modal');
+const emailLoginModal = document.getElementById('email-login-modal');
+const signupModal = document.getElementById('signup-modal');
+
+const loginEmailBtn = document.getElementById('login-email-btn');
+const showSignupModalBtn = document.getElementById('show-signup-modal');
+const showLoginModalBtn = document.getElementById('show-login-modal');
+
+const closeEmailLoginModalBtn = document.getElementById('close-email-login-modal-btn');
+const closeSignupModalBtn = document.getElementById('close-signup-modal-btn');
+
+const emailLoginForm = document.getElementById('email-login-form');
+const signupForm = document.getElementById('signup-form');
+
+function showModal(modal) {
+    modal.classList.remove('hidden');
+}
+
+function hideModal(modal) {
+    modal.classList.add('hidden');
+}
+
+loginEmailBtn.addEventListener('click', () => {
+    hideModal(loginModal);
+    showModal(emailLoginModal);
+});
+
+showSignupModalBtn.addEventListener('click', () => {
+    hideModal(emailLoginModal);
+    showModal(signupModal);
+});
+
+showLoginModalBtn.addEventListener('click', () => {
+    hideModal(signupModal);
+    showModal(emailLoginModal);
+});
+
+closeEmailLoginModalBtn.addEventListener('click', () => {
+    hideModal(emailLoginModal);
+    showModal(loginModal);
+});
+
+closeSignupModalBtn.addEventListener('click', () => {
+    hideModal(signupModal);
+    showModal(loginModal);
+});
+
+function updateAuthModalsLanguage() {
+    if (emailLoginModal) {
+        const title = emailLoginModal.querySelector('h2');
+        if (title) title.textContent = getTranslation('emailLoginTitle');
+        const desc = emailLoginModal.querySelector('p');
+        if (desc) desc.textContent = getTranslation('emailLoginDescription');
+        const emailInput = emailLoginModal.querySelector('input#email');
+        if (emailInput) emailInput.placeholder = getTranslation('emailLabel');
+        const passwordInput = emailLoginModal.querySelector('input#password');
+        if (passwordInput) passwordInput.placeholder = getTranslation('passwordLabel');
+        const emailLabel = emailLoginModal.querySelector('label[for="email"]');
+        if (emailLabel) emailLabel.textContent = getTranslation('emailLabel');
+        const passwordLabel = emailLoginModal.querySelector('label[for="password"]');
+        if (passwordLabel) passwordLabel.textContent = getTranslation('passwordLabel');
+        const loginBtn = emailLoginModal.querySelector('button[type="submit"]');
+        if (loginBtn) loginBtn.textContent = getTranslation('loginBtn');
+        const noAccount = emailLoginModal.querySelector('.mt-4 p');
+        if (noAccount) {
+            noAccount.innerHTML = `${getTranslation('noAccount')} <button id="show-signup-modal" class="text-purple-600 font-semibold hover:text-purple-700">${getTranslation('createAccount')}</button>`;
+        }
+    }
+
+    if (signupModal) {
+        const title = signupModal.querySelector('h2');
+        if (title) title.textContent = getTranslation('signupTitle');
+        const desc = signupModal.querySelector('p');
+        if (desc) desc.textContent = getTranslation('signupDescription');
+        const nameInput = signupModal.querySelector('input#signup-name');
+        if (nameInput) nameInput.placeholder = getTranslation('nameLabel');
+        const emailInput = signupModal.querySelector('input#signup-email');
+        if (emailInput) emailInput.placeholder = getTranslation('emailLabel');
+        const passwordInput = signupModal.querySelector('input#signup-password');
+        if (passwordInput) passwordInput.placeholder = getTranslation('passwordLabel');
+        const confirmPasswordInput = signupModal.querySelector('input#signup-confirm-password');
+        if (confirmPasswordInput) confirmPasswordInput.placeholder = getTranslation('confirmPasswordLabel');
+        const nameLabel = signupModal.querySelector('label[for="signup-name"]');
+        if (nameLabel) nameLabel.textContent = getTranslation('nameLabel');
+        const emailLabel = signupModal.querySelector('label[for="signup-email"]');
+        if (emailLabel) emailLabel.textContent = getTranslation('emailLabel');
+        const passwordLabel = signupModal.querySelector('label[for="signup-password"]');
+        if (passwordLabel) passwordLabel.textContent = getTranslation('passwordLabel');
+        const confirmPasswordLabel = signupModal.querySelector('label[for="signup-confirm-password"]');
+        if (confirmPasswordLabel) confirmPasswordLabel.textContent = getTranslation('confirmPasswordLabel');
+        const signupBtn = signupModal.querySelector('button[type="submit"]');
+        if (signupBtn) signupBtn.textContent = getTranslation('signupBtn');
+        const alreadyAccount = signupModal.querySelector('.mt-4 p');
+        if (alreadyAccount) {
+            alreadyAccount.innerHTML = `${getTranslation('alreadyHaveAccount')} <button id="show-login-modal" class="text-purple-600 font-semibold hover:text-purple-700">${getTranslation('doLogin')}</button>`;
+        }
+    }
+
+    if (loginEmailBtn) {
+        const span = loginEmailBtn.querySelector('span');
+        if (span) span.textContent = getTranslation('loginWithEmail');
+    }
+
+    const newShowSignupModalBtn = document.getElementById('show-signup-modal');
+    if (newShowSignupModalBtn) {
+        newShowSignupModalBtn.onclick = () => {
+            hideModal(emailLoginModal);
+            showModal(signupModal);
+        };
+    }
+    const newShowLoginModalBtn = document.getElementById('show-login-modal');
+    if (newShowLoginModalBtn) {
+        newShowLoginModalBtn.onclick = () => {
+            hideModal(signupModal);
+            showModal(emailLoginModal);
+        };
+    }
+}
+
+updateAuthModalsLanguage();
+
+window.addEventListener('DOMContentLoaded', () => {
+    const languageDropdown = document.getElementById('language-dropdown');
+    if (languageDropdown) {
+        languageDropdown.addEventListener('change', () => {
+            setTimeout(updateAuthModalsLanguage, 700);
+        });
+    }
+});
+
+function criarLoginErrorModalSeNecessario() {
+    if (document.getElementById('login-error-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'login-error-modal';
+    modal.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+        <h2 class="text-lg font-bold mb-2" id="login-error-title">Erro de Login</h2>
+        <p class="mb-4" id="login-error-message">Mensagem de erro aqui</p>
+        <button id="close-login-error-modal-btn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function showLoginErrorModal(message) {
+    criarLoginErrorModalSeNecessario();
+    const modal = document.getElementById('login-error-modal');
+    const msg = document.getElementById('login-error-message');
+    const title = document.getElementById('login-error-title');
+    const btn = document.getElementById('close-login-error-modal-btn');
+    if (title) title.textContent = getTranslation('loginErrorTitle') || 'Erro de Login';
+    if (msg) msg.textContent = message;
+    if (btn) btn.textContent = getTranslation('okBtn') || 'OK';
+    if (modal) modal.classList.remove('hidden');
+}
+
+function hideLoginErrorModal() {
+    const modal = document.getElementById('login-error-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function adicionarEventoFecharLoginErrorModal() {
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'close-login-error-modal-btn') {
+            hideLoginErrorModal();
+        }
+    });
+}
+adicionarEventoFecharLoginErrorModal();
+
+function criarForgotPasswordModalSeNecessario() {
+    if (document.getElementById('forgot-password-feedback-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'forgot-password-feedback-modal';
+    modal.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+        <h2 class="text-lg font-bold mb-2" id="forgot-password-feedback-title">Recuperação de Senha</h2>
+        <p class="mb-4" id="forgot-password-feedback-message">Mensagem aqui</p>
+        <button id="close-forgot-password-feedback-modal-btn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function showForgotPasswordFeedbackModal(message, isSuccess = true) {
+    criarForgotPasswordModalSeNecessario();
+    const modal = document.getElementById('forgot-password-feedback-modal');
+    const msg = document.getElementById('forgot-password-feedback-message');
+    const title = document.getElementById('forgot-password-feedback-title');
+    const btn = document.getElementById('close-forgot-password-feedback-modal-btn');
+    if (msg) msg.textContent = message;
+    if (title) title.textContent = isSuccess ? (getTranslation('forgotPasswordTitle') || 'Recuperação de Senha') : (getTranslation('forgotPasswordErrorTitle') || 'Erro na Recuperação');
+    if (btn) btn.textContent = getTranslation('okBtn') || 'OK';
+    if (modal) modal.classList.remove('hidden');
+}
+
+function hideForgotPasswordFeedbackModal() {
+    const modal = document.getElementById('forgot-password-feedback-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function adicionarEventoFecharForgotPasswordFeedbackModal() {
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'close-forgot-password-feedback-modal-btn') {
+            hideForgotPasswordFeedbackModal();
+        }
+    });
+}
+adicionarEventoFecharForgotPasswordFeedbackModal();

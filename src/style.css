@@ -651,3 +651,129 @@ body {
 .footer-link:hover {
     color: #ffd54f;
 }
+
+/* Scrollbar global estilizado */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #d8b4fe #f1f5f9;
+}
+
+body::-webkit-scrollbar, html::-webkit-scrollbar {
+    width: 8px;
+    background: #f1f5f9;
+}
+body::-webkit-scrollbar-thumb, html::-webkit-scrollbar-thumb {
+    background: #d8b4fe;
+    border-radius: 16px;
+    transition: background 0.2s;
+}
+body::-webkit-scrollbar-thumb:hover, html::-webkit-scrollbar-thumb:hover {
+    background: #a855f7;
+}
+body::-webkit-scrollbar-track, html::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 16px;
+}
+
+/* Scrollbar no dark mode */
+.dark-mode body::-webkit-scrollbar, .dark-mode html::-webkit-scrollbar {
+    background: #1e293b;
+}
+.dark-mode body::-webkit-scrollbar-thumb, .dark-mode html::-webkit-scrollbar-thumb {
+    background: #a78bfa;
+    border-radius: 16px;
+}
+.dark-mode body::-webkit-scrollbar-thumb:hover, .dark-mode html::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed;
+}
+.dark-mode body::-webkit-scrollbar-track, .dark-mode html::-webkit-scrollbar-track {
+    background: #1e293b;
+    border-radius: 16px;
+}
+
+/* Scrollbar para todos os elementos com overflow (ex: modais) */
+*::-webkit-scrollbar {
+    width: 8px;
+    background: #f1f5f9;
+}
+*::-webkit-scrollbar-thumb {
+    background: #d8b4fe;
+    border-radius: 16px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background: #a855f7;
+}
+*::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 16px;
+}
+
+.dark-mode *::-webkit-scrollbar {
+    background: #1e293b;
+}
+.dark-mode *::-webkit-scrollbar-thumb {
+    background: #a78bfa;
+    border-radius: 16px;
+}
+.dark-mode *::-webkit-scrollbar-thumb:hover {
+    background: #7c3aed;
+}
+.dark-mode *::-webkit-scrollbar-track {
+    background: #1e293b;
+    border-radius: 16px;
+}
+
+/* Dark Mode - Elementos específicos */
+.dark-mode #email-login-modal input[type="email"],
+.dark-mode #email-login-modal input[type="password"],
+.dark-mode #signup-modal input[type="email"],
+.dark-mode #signup-modal input[type="password"],
+.dark-mode #signup-modal input[type="text"] {
+    background: #111 !important;
+    color: #fff !important;
+    border-color: #333 !important;
+}
+
+.dark-mode #email-login-modal input[type="email"]::placeholder,
+.dark-mode #email-login-modal input[type="password"]::placeholder,
+.dark-mode #signup-modal input[type="email"]::placeholder,
+.dark-mode #signup-modal input[type="password"]::placeholder,
+.dark-mode #signup-modal input[type="text"]::placeholder {
+    color: #bbb !important;
+}
+
+.dark-mode #login-email-btn {
+    color: #fff !important;
+}
+
+.dark-mode #email-login-modal h2,
+.dark-mode #signup-modal h2 {
+    color: #fff !important;
+}
+.dark-mode #email-login-modal p,
+.dark-mode #signup-modal p {
+    color: #bbb !important;
+}
+
+.dark-mode #forgot-password-modal .bg-white {
+    background: var(--chat-bg-color) !important;
+    color: var(--text-color) !important;
+}
+.dark-mode #forgot-password-modal .text-slate-800 {
+    color: var(--text-color) !important;
+}
+.dark-mode #forgot-password-modal .text-slate-500 {
+    color: #a0aec0 !important;
+}
+.dark-mode #forgot-password-modal input[type="email"] {
+    background: #111 !important;
+    color: #fff !important;
+    border-color: #333 !important;
+}
+.dark-mode #forgot-password-modal input[type="email"]::placeholder {
+    color: #bbb !important;
+}
+.dark-mode #forgot-password-modal button[type="submit"] {
+    background: var(--primary-color) !important;
+    color: #fff !important;
+}
