@@ -100,19 +100,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(express.static(path.join(__dirname, '../dist')));
 
-// Rate Limiting Middleware
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 100,
     message: {
         success: false,
         error: "Too many requests from this IP, please try again later."
     },
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    standardHeaders: true,
+    legacyHeaders: false,
 });
 
-// Apply rate limiter to sensitive routes
 app.use('/api/gemini/generate', apiLimiter);
 
 app.get('/api/health', (req, res) => {
