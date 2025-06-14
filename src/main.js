@@ -1,6 +1,7 @@
 import './style.css'
 import { initThemeTransition } from './themeManager.js'
 import { initializeI18n, updateLanguageUI, getTranslation, getCurrentLanguage } from './i18n.js'
+import DOMPurify from 'dompurify';
 
 initThemeTransition();
 
@@ -364,15 +365,15 @@ function afterFirebaseInit(firebaseFns) {
             const userAvatarUrl = currentUser?.photoURL || WILB_IMAGE_URL_ANON;
             messageDiv.innerHTML = `
                 <div class="bg-purple-600 text-white p-4 rounded-lg shadow-sm max-w-lg prose">
-                    ${message.imageUrl ? `<img src="${message.imageUrl}" alt="Imagem enviada" class="rounded-lg mb-2 max-w-full h-auto">` : ''}
-                    ${message.text ? `<div>${marked.parse(message.text)}</div>` : ''}
+                    ${message.imageUrl ? `<img src="${DOMPurify.sanitize(message.imageUrl)}" alt="Imagem enviada" class="rounded-lg mb-2 max-w-full h-auto">` : ''}
+                    ${message.text ? `<div>${DOMPurify.sanitize(marked.parse(message.text))}</div>` : ''}
                 </div>
                 <img src="${userAvatarUrl}" alt="Ícone do usuário" class="w-10 h-10 rounded-full bg-slate-200">
             `;
         } else {
             messageDiv.innerHTML = `
                 <img src="${WILB_IMAGE_URL}" alt="Ícone do Wilb" class="w-10 h-10 rounded-full bg-slate-200">
-                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${marked.parse(message.text)}</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${DOMPurify.sanitize(marked.parse(message.text))}</div>
             `;
         }
 
@@ -380,6 +381,9 @@ function afterFirebaseInit(firebaseFns) {
         scrollToBottom();
 
         if (window.MathJax && window.MathJax.typesetPromise) {
+            messageDiv.querySelectorAll('span.math, div.math, .MathJax').forEach(el => {
+                el.innerHTML = sanitizeLatexInput(el.innerHTML);
+            });
             window.MathJax.typesetPromise([messageDiv]);
         }
     };
