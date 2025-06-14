@@ -143,6 +143,29 @@ function updateButtonsAndLabels(language) {
 
     // Atualizar opções do dropdown de idioma
     updateLanguageOptions(language);
+
+    // Modal Esqueceu a Senha
+    const forgotPasswordModal = document.getElementById('forgot-password-modal');
+    if (forgotPasswordModal) {
+        const title = forgotPasswordModal.querySelector('h2');
+        if (title) title.textContent = getTranslation('forgotPasswordTitle');
+        const desc = forgotPasswordModal.querySelector('p');
+        if (desc) desc.textContent = getTranslation('forgotPasswordDescription');
+        const emailInput = forgotPasswordModal.querySelector('input#forgot-email');
+        if (emailInput) emailInput.placeholder = getTranslation('forgotPasswordEmailLabel');
+        const emailLabel = forgotPasswordModal.querySelector('label[for="forgot-email"]');
+        if (emailLabel) emailLabel.textContent = getTranslation('forgotPasswordEmailLabel');
+        const sendBtn = forgotPasswordModal.querySelector('button[type="submit"]');
+        if (sendBtn) sendBtn.textContent = getTranslation('forgotPasswordSendBtn');
+        const backBtn = forgotPasswordModal.querySelector('#back-to-login-modal');
+        if (backBtn) backBtn.textContent = getTranslation('forgotPasswordBackBtn');
+    }
+
+    // Botão 'Esqueceu a senha?' no modal de login com email
+    const forgotPasswordBtn = document.getElementById('show-forgot-password-modal');
+    if (forgotPasswordBtn) {
+        forgotPasswordBtn.textContent = getTranslation('forgotPasswordBtn') || 'Esqueceu a senha?';
+    }
 }
 
 // Função para atualizar opções do dropdown de idioma

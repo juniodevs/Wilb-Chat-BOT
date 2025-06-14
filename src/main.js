@@ -14,7 +14,7 @@ async function initializeFirebase() {
     const config = await response.json();
     const firebaseConfig = config.firebase;
     const { initializeApp } = await import('firebase/app');
-    const { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut } = await import('firebase/auth');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
     const { getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = await import('firebase/firestore');
 
     app = initializeApp(firebaseConfig);
@@ -27,6 +27,9 @@ async function initializeFirebase() {
         signInAnonymously,
         onAuthStateChanged,
         signOut,
+        signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        updateProfile,
         collection,
         doc,
         addDoc,
@@ -41,7 +44,7 @@ async function initializeFirebase() {
 }
 
 function afterFirebaseInit(firebaseFns) {
-    const { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = firebaseFns;
+    const { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = firebaseFns;
 
     // --- DOM Elements ---
     const loginModal = document.getElementById('login-modal');
@@ -73,6 +76,10 @@ function afterFirebaseInit(firebaseFns) {
     const menuToggleBtn = document.getElementById('menu-toggle-btn');
     const historyOverlay = document.getElementById('history-overlay');
     const closeLoginModalBtn = document.getElementById('close-login-modal-btn');
+    const forgotPasswordModal = document.getElementById('forgot-password-modal');
+    const showForgotPasswordModalBtn = document.getElementById('show-forgot-password-modal');
+    const closeForgotPasswordModalBtn = document.getElementById('close-forgot-password-modal-btn');
+    const backToLoginModalBtn = document.getElementById('back-to-login-modal');
 
     // --- Constants ---
     const WILB_IMAGE_URL = '/images/WilbAvatar.png';
@@ -860,6 +867,79 @@ function afterFirebaseInit(firebaseFns) {
     });
 
     initializeI18n();
+
+    // Adicionar listeners para login e criação de conta por email/senha
+    if (emailLoginForm) {
+        emailLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                currentUser = userCredential.user;
+                updateUIForUser(currentUser);
+                hideModal(emailLoginModal);
+                window.location.reload();
+            } catch (error) {
+                let msg = 'Erro ao fazer login.';
+                if (error.code === 'auth/user-not-found') msg = 'Usuário não encontrado.';
+                else if (error.code === 'auth/wrong-password') msg = 'Senha incorreta.';
+                else if (error.code === 'auth/invalid-email') msg = 'Email inválido.';
+                else if (error.code === 'auth/too-many-requests') msg = 'Muitas tentativas. Tente novamente mais tarde.';
+                alert(msg);
+            }
+        });
+    }
+    if (signupForm) {
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+            if (password !== confirmPassword) {
+                alert(getTranslation('passwordMismatch') || 'As senhas não coincidem!');
+                return;
+            }
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                currentUser = userCredential.user;
+                // Atualizar nome do usuário
+                if (name && updateProfile) {
+                    await updateProfile(currentUser, { displayName: name });
+                }
+                updateUIForUser(currentUser);
+                hideModal(signupModal);
+                showModal(emailLoginModal);
+                alert('Conta criada com sucesso! Faça login.');
+            } catch (error) {
+                let msg = 'Erro ao criar conta.';
+                if (error.code === 'auth/email-already-in-use') msg = 'Este email já está em uso.';
+                else if (error.code === 'auth/invalid-email') msg = 'Email inválido.';
+                else if (error.code === 'auth/weak-password') msg = 'A senha deve ter pelo menos 6 caracteres.';
+                alert(msg);
+            }
+        });
+    }
+
+    if (showForgotPasswordModalBtn) {
+        showForgotPasswordModalBtn.addEventListener('click', () => {
+            hideModal(emailLoginModal);
+            showModal(forgotPasswordModal);
+        });
+    }
+    if (closeForgotPasswordModalBtn) {
+        closeForgotPasswordModalBtn.addEventListener('click', () => {
+            hideModal(forgotPasswordModal);
+            showModal(emailLoginModal);
+        });
+    }
+    if (backToLoginModalBtn) {
+        backToLoginModalBtn.addEventListener('click', () => {
+            hideModal(forgotPasswordModal);
+            showModal(emailLoginModal);
+        });
+    }
 }
 
 initializeFirebase();
@@ -971,40 +1051,6 @@ closeEmailLoginModalBtn.addEventListener('click', () => {
 closeSignupModalBtn.addEventListener('click', () => {
     hideModal(signupModal);
     showModal(loginModal);
-});
-
-emailLoginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-
-    try {
-        console.log('Tentando fazer login com:', { email, password });
-        hideModal(emailLoginModal);
-    } catch (error) {
-        console.error('Erro ao fazer login:', error);
-    }
-});
-
-signupForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('signup-name').value;
-    const email = document.getElementById('signup-email').value;
-    const password = document.getElementById('signup-password').value;
-    const confirmPassword = document.getElementById('signup-confirm-password').value;
-
-    if (password !== confirmPassword) {
-        alert(getTranslation('passwordMismatch'));
-        return;
-    }
-
-    try {
-        console.log('Tentando criar conta:', { name, email, password });
-        hideModal(signupModal);
-        showModal(emailLoginModal);
-    } catch (error) {
-        console.error('Erro ao criar conta:', error);
-    }
 });
 
 function updateAuthModalsLanguage() {

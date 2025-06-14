@@ -73,7 +73,15 @@ export const translations = {
     signupBtn: "Criar Conta",
     alreadyHaveAccount: "Já tem uma conta?",
     doLogin: "Fazer Login",
-    passwordMismatch: "As senhas não coincidem!"
+    passwordMismatch: "As senhas não coincidem!",
+    forgotPasswordTitle: "Recuperar Senha",
+    forgotPasswordDescription: "Digite seu email para receber instruções de recuperação de senha.",
+    forgotPasswordEmailLabel: "Email",
+    forgotPasswordSendBtn: "Enviar",
+    forgotPasswordBackBtn: "Voltar ao Login",
+    forgotPasswordSuccess: "Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.",
+    forgotPasswordError: "Erro ao tentar recuperar a senha. Tente novamente.",
+    forgotPasswordBtn: "Esqueceu a senha?"
   },
   'en': {
     welcome: "Hi! I'm Wilb, your study companion 💜✨\nShall we rock together?",
@@ -149,7 +157,15 @@ export const translations = {
     signupBtn: "Create Account",
     alreadyHaveAccount: "Already have an account?",
     doLogin: "Login",
-    passwordMismatch: "Passwords do not match!"
+    passwordMismatch: "Passwords do not match!",
+    forgotPasswordTitle: "Reset Password",
+    forgotPasswordDescription: "Enter your email to receive password reset instructions.",
+    forgotPasswordEmailLabel: "Email",
+    forgotPasswordSendBtn: "Send",
+    forgotPasswordBackBtn: "Back to Login",
+    forgotPasswordSuccess: "If the email is registered, you will receive instructions to reset your password.",
+    forgotPasswordError: "Error trying to recover password. Please try again.",
+    forgotPasswordBtn: "Forgot your password?"
   }
 };
 
