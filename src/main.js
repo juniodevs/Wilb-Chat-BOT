@@ -1,6 +1,7 @@
 import './style.css'
 import { initThemeTransition } from './themeManager.js'
 import { initializeI18n, updateLanguageUI, getTranslation, getCurrentLanguage } from './i18n.js'
+import DOMPurify from 'dompurify';
 
 initThemeTransition();
 
@@ -91,6 +92,7 @@ function afterFirebaseInit(firebaseFns) {
     let contextTargetId = null;
     let unsubscribeHistory = null;
     let chatIdToDelete = null;
+    let isWaitingWilbResponse = false;
 
     const localCache = {
         responses: new Map(),
@@ -364,15 +366,15 @@ function afterFirebaseInit(firebaseFns) {
             const userAvatarUrl = currentUser?.photoURL || WILB_IMAGE_URL_ANON;
             messageDiv.innerHTML = `
                 <div class="bg-purple-600 text-white p-4 rounded-lg shadow-sm max-w-lg prose">
-                    ${message.imageUrl ? `<img src="${message.imageUrl}" alt="Imagem enviada" class="rounded-lg mb-2 max-w-full h-auto">` : ''}
-                    ${message.text ? `<div>${marked.parse(message.text)}</div>` : ''}
+                    ${message.imageUrl ? `<img src="${DOMPurify.sanitize(message.imageUrl)}" alt="Imagem enviada" class="rounded-lg mb-2 max-w-full h-auto">` : ''}
+                    ${message.text ? `<div>${DOMPurify.sanitize(marked.parse(message.text))}</div>` : ''}
                 </div>
                 <img src="${userAvatarUrl}" alt="Ícone do usuário" class="w-10 h-10 rounded-full bg-slate-200">
             `;
         } else {
             messageDiv.innerHTML = `
                 <img src="${WILB_IMAGE_URL}" alt="Ícone do Wilb" class="w-10 h-10 rounded-full bg-slate-200">
-                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${marked.parse(message.text)}</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${DOMPurify.sanitize(marked.parse(message.text))}</div>
             `;
         }
 
@@ -380,6 +382,9 @@ function afterFirebaseInit(firebaseFns) {
         scrollToBottom();
 
         if (window.MathJax && window.MathJax.typesetPromise) {
+            messageDiv.querySelectorAll('span.math, div.math, .MathJax').forEach(el => {
+                el.innerHTML = sanitizeLatexInput(el.innerHTML);
+            });
             window.MathJax.typesetPromise([messageDiv]);
         }
     };
@@ -427,7 +432,7 @@ function afterFirebaseInit(firebaseFns) {
             image: newBase64ImageData,
             mode: currentMode,
             seriousMode,
-            language: currentLanguage 
+            language: currentLanguage
         };
 
         const response = await fetch('/api/gemini/generate', {
@@ -517,8 +522,13 @@ function afterFirebaseInit(firebaseFns) {
     };
 
     const handleSendMessage = async () => {
+        if (isWaitingWilbResponse) return;
         const userText = messageInput.value.trim();
         if (!userText && !imageBase64) return;
+
+        isWaitingWilbResponse = true;
+        sendBtn.disabled = true;
+        newChatBtn.disabled = true;
 
         const messageForDisplay = {
             sender: 'user',
@@ -565,6 +575,13 @@ function afterFirebaseInit(firebaseFns) {
             currentMessages.push(errorMessage);
             displayMessage(errorMessage);
         }
+
+        setTimeout(() => {
+            isWaitingWilbResponse = false;
+            sendBtn.disabled = false;
+            newChatBtn.disabled = false;
+            updateSendButtonState();
+        }, 3000);
     };
 
     const exitRenameMode = async (chatId, newTitle) => {
@@ -736,20 +753,22 @@ function afterFirebaseInit(firebaseFns) {
 
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        handleSendMessage();
+        if (!isWaitingWilbResponse) handleSendMessage();
     });
 
     messageInput.addEventListener('input', updateSendButtonState);
     messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSendMessage();
+            if (!isWaitingWilbResponse) handleSendMessage();
         }
     });
 
     imageUploadInput.addEventListener('change', handleImageUpload);
     removeImageBtn.addEventListener('click', removeImage);
-    newChatBtn.addEventListener('click', startNewChat);
+    newChatBtn.addEventListener('click', () => {
+        if (!isWaitingWilbResponse) startNewChat();
+    });
 
     userMenuButton.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -954,7 +973,7 @@ function afterFirebaseInit(firebaseFns) {
             }
         });
     }
-    
+
     const yesBtn = document.getElementById('delete-chat-yes-btn');
     const noBtn = document.getElementById('delete-chat-no-btn');
     if (yesBtn) {
@@ -1009,7 +1028,7 @@ if (savedTheme === 'dark') {
 }
 
 darkModeToggle.addEventListener('click', toggleDarkMode);
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const textarea = document.getElementById('message-input');
     const counter = document.getElementById('char-counter');
     const maxHeight = 160;
@@ -1018,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', function() {
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
         }
-        textarea.addEventListener('input', function() {
+        textarea.addEventListener('input', function () {
             autoResize();
             if (counter) {
                 counter.textContent = `${textarea.value.length}/4000`;
@@ -1194,7 +1213,7 @@ function hideLoginErrorModal() {
 }
 
 function adicionarEventoFecharLoginErrorModal() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target && e.target.id === 'close-login-error-modal-btn') {
             hideLoginErrorModal();
         }
@@ -1235,7 +1254,7 @@ function hideForgotPasswordFeedbackModal() {
 }
 
 function adicionarEventoFecharForgotPasswordFeedbackModal() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target && e.target.id === 'close-forgot-password-feedback-modal-btn') {
             hideForgotPasswordFeedbackModal();
         }

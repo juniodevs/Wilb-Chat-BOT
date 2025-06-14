@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -81,8 +82,16 @@ const PROMPTS = {
     serio: "ATENÇÃO: Dois prompts de personalidade podem ser enviados juntos, mas neste modo você deve IGNORAR QUALQUER OUTRA PERSONALIDADE considerar APENAS esta personalidade séria. PERSONALIDADE DO ASSISTENTE: Você é Wilb, um tutor objetivo, formal. NÃO use emojis, emotes ou qualquer tipo de informalidade. Fale de forma clara, profissional e sem rodeios, SEM NENHUM EMOTE. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor sério sem brincadeiras ou informalidade. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas matemáticas, listas, tabelas, exemplos e destaques. Use blocos de código para fórmulas e sintaxe LaTeX quando apropriado."
 };
 
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
-    origin: '*',
+    origin: function(origin, callback) {
+        console.log('CORS request from origin:', origin, '| Allowed:', allowedOrigins);
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true
 }));
 
@@ -90,6 +99,19 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(express.static(path.join(__dirname, '../dist')));
+
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100,
+    message: {
+        success: false,
+        error: "Too many requests from this IP, please try again later."
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use('/api/gemini/generate', apiLimiter);
 
 app.get('/api/health', (req, res) => {
     res.json({
@@ -186,69 +208,67 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory, language 
     return 'Não consegui gerar uma resposta.';
 }
 
-app.post('/api/gemini/generate', async (req, res) => {
-    try {
-        const { prompt, image, mode, conversationHistory, seriousMode, language } = req.body;
+// Helper to wrap async route handlers for error forwarding
+function asyncHandler(fn) {
+    return function (req, res, next) {
+        Promise.resolve(fn(req, res, next)).catch(next);
+    };
+}
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.status(500).json({
-                success: false,
-                error: 'Gemini API Key não configurada no servidor.'
-            });
-        }
+app.post('/api/gemini/generate', asyncHandler(async (req, res) => {
+    const { prompt, image, mode, conversationHistory, seriousMode, language } = req.body;
 
-        if (typeof prompt === 'string' && prompt.length > 5000) {
-            return res.status(400).json({
-                success: false,
-                error: 'O texto enviado excede o limite máximo de 5000 caracteres.'
-            });
-        }
-
-        let promptMode = mode;
-        if (seriousMode === true) {
-            promptMode = 'serio';
-        }
-        const cacheKey = responseCache.generateKey(prompt, promptMode, conversationHistory, !!image);
-        let responseText = null;
-        let fromCache = false;
-        if (!image) {
-            responseText = responseCache.get(cacheKey);
-            if (responseText) {
-                fromCache = true;
-                console.log(`Cache hit para chave: ${cacheKey}`);
-            }
-        }
-        if (!responseText) {
-            console.log(`Cache miss - chamando API Gemini para chave: ${cacheKey}`);
-            responseText = await callGeminiAPI(
-                prompt,
-                image,
-                promptMode,
-                conversationHistory,
-                language?.toLowerCase() || 'pt-br'
-            );
-
-            if (!image && responseText) {
-                responseCache.set(cacheKey, responseText);
-            }
-        }
-
-        res.json({
-            success: true,
-            response: responseText,
-            mode: promptMode,
-            cached: fromCache,
-            cacheKey: !image ? cacheKey : null
-        });
-
-    } catch (error) {
-        console.error('Erro na API Gemini:', error);
-        res.status(500).json({
+    if (!process.env.GEMINI_API_KEY) {
+        return res.status(500).json({
             success: false,
-            error: 'Erro interno do servidor'
+            error: process.env.NODE_ENV === 'development' ? 'Gemini API Key não configurada no servidor.' : 'An unexpected error occurred. Please try again later.'
         });
     }
-});
+
+    if (typeof prompt === 'string' && prompt.length > 5000) {
+        return res.status(400).json({
+            success: false,
+            error: process.env.NODE_ENV === 'development' ? 'O texto enviado excede o limite máximo de 5000 caracteres.' : 'An unexpected error occurred. Please try again later.'
+        });
+    }
+
+    let promptMode = mode;
+    if (seriousMode === true) {
+        promptMode = 'serio';
+    }
+    const cacheKey = responseCache.generateKey(prompt, promptMode, conversationHistory, !!image);
+    let responseText = null;
+    let fromCache = false;
+    if (!image) {
+        responseText = responseCache.get(cacheKey);
+        if (responseText) {
+            fromCache = true;
+            console.log(`Cache hit para chave: ${cacheKey}`);
+        }
+    }
+    if (!responseText) {
+        console.log(`Cache miss - chamando API Gemini para chave: ${cacheKey}`);
+        responseText = await callGeminiAPI(
+            prompt,
+            image,
+            promptMode,
+            conversationHistory,
+            language?.toLowerCase() || 'pt-br'
+        );
+
+        if (!image && responseText) {
+            responseCache.set(cacheKey, responseText);
+        }
+    }
+
+    res.json({
+        success: true,
+        response: responseText,
+        mode: promptMode,
+        cached: fromCache,
+        cacheKey: !image ? cacheKey : null
+    });
+}));
 
 app.get('/api/stats', (req, res) => {
     res.json({
@@ -266,7 +286,7 @@ app.post('/api/cache/clear', (req, res) => {
         responseCache.clear();
         res.json({ success: true, message: 'Cache limpo com sucesso' });
     } else {
-        res.status(403).json({ success: false, error: 'Operação não permitida em produção' });
+        res.status(403).json({ success: false, error: 'Operation not allowed in production.' });
     }
 });
 
@@ -274,12 +294,15 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
+// Centralized error-handling middleware
 app.use((err, req, res, next) => {
-    console.error('Erro no servidor:', err);
+    // Always log full error details internally
+    console.error('Internal error:', err);
     res.status(500).json({
         success: false,
-        error: 'Erro interno do servidor',
-        message: process.env.NODE_ENV === 'development' ? err.message : 'Algo deu errado'
+        error: process.env.NODE_ENV === 'development'
+            ? (err && err.message ? err.message : 'Internal server error')
+            : 'An unexpected error occurred. Please try again later.'
     });
 });
 
