@@ -44,6 +44,15 @@ export function updateLanguageUI() {
     
     // Atualizar mensagem de boas-vindas se estiver sendo exibida
     updateWelcomeMessage(currentLanguage);
+
+    const deleteChatTitle = document.getElementById('delete-chat-title');
+    const deleteChatMessage = document.getElementById('delete-chat-message');
+    const deleteChatYes = document.getElementById('delete-chat-yes-btn');
+    const deleteChatNo = document.getElementById('delete-chat-no-btn');
+    if (deleteChatTitle) deleteChatTitle.textContent = getTranslation('deleteChatTitle');
+    if (deleteChatMessage) deleteChatMessage.textContent = getTranslation('deleteChatMessage');
+    if (deleteChatYes) deleteChatYes.textContent = getTranslation('deleteChatYes');
+    if (deleteChatNo) deleteChatNo.textContent = getTranslation('deleteChatNo');
 }
 
 // Função para atualizar textos estáticos

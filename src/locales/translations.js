@@ -89,7 +89,11 @@ export const translations = {
     loginTooManyRequests: "Muitas tentativas. Tente novamente mais tarde.",
     loginErrorTitle: "Erro de Login",
     forgotPasswordErrorTitle: "Erro na Recuperação",
-    okBtn: "OK"
+    okBtn: "OK",
+    deleteChatTitle: "Excluir Chat",
+    deleteChatMessage: "Tem certeza que deseja excluir este chat?",
+    deleteChatYes: "Sim",
+    deleteChatNo: "Não"
   },
   'en': {
     welcome: "Hi! I'm Wilb, your study companion 💜✨\nShall we rock together?",
@@ -181,6 +185,10 @@ export const translations = {
     loginTooManyRequests: "Too many attempts. Please try again later.",
     loginErrorTitle: "Login Error",
     forgotPasswordErrorTitle: "Recovery Error",
-    okBtn: "OK"
+    okBtn: "OK",
+    deleteChatTitle: "Delete Chat",
+    deleteChatMessage: "Are you sure you want to delete this chat?",
+    deleteChatYes: "Yes",
+    deleteChatNo: "No"
   }
 };

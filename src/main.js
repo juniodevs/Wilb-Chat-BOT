@@ -90,6 +90,7 @@ function afterFirebaseInit(firebaseFns) {
     let currentMessages = [];
     let contextTargetId = null;
     let unsubscribeHistory = null;
+    let chatIdToDelete = null;
 
     const localCache = {
         responses: new Map(),
@@ -590,8 +591,31 @@ function afterFirebaseInit(firebaseFns) {
         renderHistory();
     };
 
-    const deleteChat = async (chatId) => {
-        if (!confirm('Tem certeza que deseja excluir este chat?')) return;
+    function showDeleteChatModal(chatId) {
+        chatIdToDelete = chatId;
+        const modal = document.getElementById('delete-chat-modal');
+        const title = document.getElementById('delete-chat-title');
+        const message = document.getElementById('delete-chat-message');
+        const yesBtn = document.getElementById('delete-chat-yes-btn');
+        const noBtn = document.getElementById('delete-chat-no-btn');
+        if (title) title.textContent = getTranslation('deleteChatTitle');
+        if (message) message.textContent = getTranslation('deleteChatMessage');
+        if (yesBtn) yesBtn.textContent = getTranslation('deleteChatYes');
+        if (noBtn) noBtn.textContent = getTranslation('deleteChatNo');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function hideDeleteChatModal() {
+        const modal = document.getElementById('delete-chat-modal');
+        if (modal) modal.classList.add('hidden');
+        chatIdToDelete = null;
+    }
+
+    const deleteChat = async (chatId, confirmed = false) => {
+        if (!confirmed) {
+            showDeleteChatModal(chatId);
+            return;
+        }
 
         if (currentUser && !currentUser.isAnonymous) {
             try {
@@ -790,7 +814,7 @@ function afterFirebaseInit(firebaseFns) {
                 togglePinChat(contextTargetId);
                 break;
             case 'delete':
-                deleteChat(contextTargetId);
+                showDeleteChatModal(contextTargetId);
                 break;
         }
 
@@ -929,6 +953,20 @@ function afterFirebaseInit(firebaseFns) {
                 showForgotPasswordFeedbackModal(getTranslation('forgotPasswordError') || 'Erro ao tentar recuperar a senha. Tente novamente.', false);
             }
         });
+    }
+    
+    const yesBtn = document.getElementById('delete-chat-yes-btn');
+    const noBtn = document.getElementById('delete-chat-no-btn');
+    if (yesBtn) {
+        yesBtn.onclick = async () => {
+            if (chatIdToDelete) {
+                await deleteChat(chatIdToDelete, true);
+            }
+            hideDeleteChatModal();
+        };
+    }
+    if (noBtn) {
+        noBtn.onclick = hideDeleteChatModal;
     }
 }
 
