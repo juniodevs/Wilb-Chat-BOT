@@ -81,7 +81,15 @@ export const translations = {
     forgotPasswordBackBtn: "Voltar ao Login",
     forgotPasswordSuccess: "Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.",
     forgotPasswordError: "Erro ao tentar recuperar a senha. Tente novamente.",
-    forgotPasswordBtn: "Esqueceu a senha?"
+    forgotPasswordBtn: "Esqueceu a senha?",
+    loginGenericError: "Erro ao fazer login.",
+    loginUserNotFound: "Usuário não encontrado.",
+    loginWrongPassword: "Senha incorreta.",
+    loginInvalidEmail: "Email inválido.",
+    loginTooManyRequests: "Muitas tentativas. Tente novamente mais tarde.",
+    loginErrorTitle: "Erro de Login",
+    forgotPasswordErrorTitle: "Erro na Recuperação",
+    okBtn: "OK"
   },
   'en': {
     welcome: "Hi! I'm Wilb, your study companion 💜✨\nShall we rock together?",
@@ -165,8 +173,14 @@ export const translations = {
     forgotPasswordBackBtn: "Back to Login",
     forgotPasswordSuccess: "If the email is registered, you will receive instructions to reset your password.",
     forgotPasswordError: "Error trying to recover password. Please try again.",
-    forgotPasswordBtn: "Forgot your password?"
+    forgotPasswordBtn: "Forgot your password?",
+    loginGenericError: "Error logging in.",
+    loginUserNotFound: "User not found.",
+    loginWrongPassword: "Incorrect password.",
+    loginInvalidEmail: "Invalid email.",
+    loginTooManyRequests: "Too many attempts. Please try again later.",
+    loginErrorTitle: "Login Error",
+    forgotPasswordErrorTitle: "Recovery Error",
+    okBtn: "OK"
   }
 };
-
-

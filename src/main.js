@@ -847,12 +847,12 @@ function afterFirebaseInit(firebaseFns) {
                 hideModal(emailLoginModal);
                 window.location.reload();
             } catch (error) {
-                let msg = 'Erro ao fazer login.';
-                if (error.code === 'auth/user-not-found') msg = 'Usuário não encontrado.';
-                else if (error.code === 'auth/wrong-password') msg = 'Senha incorreta.';
-                else if (error.code === 'auth/invalid-email') msg = 'Email inválido.';
-                else if (error.code === 'auth/too-many-requests') msg = 'Muitas tentativas. Tente novamente mais tarde.';
-                alert(msg);
+                let msg = getTranslation('loginGenericError');
+                if (error.code === 'auth/user-not-found') msg = getTranslation('loginUserNotFound');
+                else if (error.code === 'auth/wrong-password') msg = getTranslation('loginWrongPassword');
+                else if (error.code === 'auth/invalid-email') msg = getTranslation('loginInvalidEmail');
+                else if (error.code === 'auth/too-many-requests') msg = getTranslation('loginTooManyRequests');
+                showLoginErrorModal(msg);
             }
         });
     }
@@ -922,11 +922,11 @@ function afterFirebaseInit(firebaseFns) {
                     sendPasswordResetEmailFn = sendPasswordResetEmail;
                 }
                 await sendPasswordResetEmailFn(auth, email);
-                alert(getTranslation('forgotPasswordSuccess') || 'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.');
+                showForgotPasswordFeedbackModal(getTranslation('forgotPasswordSuccess') || 'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.', true);
                 hideModal(forgotPasswordModal);
                 showModal(emailLoginModal);
             } catch (error) {
-                alert(getTranslation('forgotPasswordError') || 'Erro ao tentar recuperar a senha. Tente novamente.');
+                showForgotPasswordFeedbackModal(getTranslation('forgotPasswordError') || 'Erro ao tentar recuperar a senha. Tente novamente.', false);
             }
         });
     }
@@ -1122,3 +1122,85 @@ window.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+function criarLoginErrorModalSeNecessario() {
+    if (document.getElementById('login-error-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'login-error-modal';
+    modal.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+        <h2 class="text-lg font-bold mb-2" id="login-error-title">Erro de Login</h2>
+        <p class="mb-4" id="login-error-message">Mensagem de erro aqui</p>
+        <button id="close-login-error-modal-btn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function showLoginErrorModal(message) {
+    criarLoginErrorModalSeNecessario();
+    const modal = document.getElementById('login-error-modal');
+    const msg = document.getElementById('login-error-message');
+    const title = document.getElementById('login-error-title');
+    const btn = document.getElementById('close-login-error-modal-btn');
+    if (title) title.textContent = getTranslation('loginErrorTitle') || 'Erro de Login';
+    if (msg) msg.textContent = message;
+    if (btn) btn.textContent = getTranslation('okBtn') || 'OK';
+    if (modal) modal.classList.remove('hidden');
+}
+
+function hideLoginErrorModal() {
+    const modal = document.getElementById('login-error-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function adicionarEventoFecharLoginErrorModal() {
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'close-login-error-modal-btn') {
+            hideLoginErrorModal();
+        }
+    });
+}
+adicionarEventoFecharLoginErrorModal();
+
+function criarForgotPasswordModalSeNecessario() {
+    if (document.getElementById('forgot-password-feedback-modal')) return;
+    const modal = document.createElement('div');
+    modal.id = 'forgot-password-feedback-modal';
+    modal.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden';
+    modal.innerHTML = `
+      <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+        <h2 class="text-lg font-bold mb-2" id="forgot-password-feedback-title">Recuperação de Senha</h2>
+        <p class="mb-4" id="forgot-password-feedback-message">Mensagem aqui</p>
+        <button id="close-forgot-password-feedback-modal-btn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">OK</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function showForgotPasswordFeedbackModal(message, isSuccess = true) {
+    criarForgotPasswordModalSeNecessario();
+    const modal = document.getElementById('forgot-password-feedback-modal');
+    const msg = document.getElementById('forgot-password-feedback-message');
+    const title = document.getElementById('forgot-password-feedback-title');
+    const btn = document.getElementById('close-forgot-password-feedback-modal-btn');
+    if (msg) msg.textContent = message;
+    if (title) title.textContent = isSuccess ? (getTranslation('forgotPasswordTitle') || 'Recuperação de Senha') : (getTranslation('forgotPasswordErrorTitle') || 'Erro na Recuperação');
+    if (btn) btn.textContent = getTranslation('okBtn') || 'OK';
+    if (modal) modal.classList.remove('hidden');
+}
+
+function hideForgotPasswordFeedbackModal() {
+    const modal = document.getElementById('forgot-password-feedback-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function adicionarEventoFecharForgotPasswordFeedbackModal() {
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'close-forgot-password-feedback-modal-btn') {
+            hideForgotPasswordFeedbackModal();
+        }
+    });
+}
+adicionarEventoFecharForgotPasswordFeedbackModal();
