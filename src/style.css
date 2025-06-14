@@ -777,3 +777,11 @@ body::-webkit-scrollbar-track, html::-webkit-scrollbar-track {
     background: var(--primary-color) !important;
     color: #fff !important;
 }
+
+#delete-chat-modal .bg-white {
+    background: #fff;
+}
+.dark-mode #delete-chat-modal .bg-white {
+    background: #2d3748 !important;
+    color: #fff !important;
+}
