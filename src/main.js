@@ -925,3 +925,95 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+const loginModal = document.getElementById('login-modal');
+const emailLoginModal = document.getElementById('email-login-modal');
+const signupModal = document.getElementById('signup-modal');
+
+const loginEmailBtn = document.getElementById('login-email-btn');
+const showSignupModalBtn = document.getElementById('show-signup-modal');
+const showLoginModalBtn = document.getElementById('show-login-modal');
+
+const closeEmailLoginModalBtn = document.getElementById('close-email-login-modal-btn');
+const closeSignupModalBtn = document.getElementById('close-signup-modal-btn');
+
+const emailLoginForm = document.getElementById('email-login-form');
+const signupForm = document.getElementById('signup-form');
+
+function showModal(modal) {
+    modal.classList.remove('hidden');
+}
+
+function hideModal(modal) {
+    modal.classList.add('hidden');
+}
+
+loginEmailBtn.addEventListener('click', () => {
+    hideModal(loginModal);
+    showModal(emailLoginModal);
+});
+
+showSignupModalBtn.addEventListener('click', () => {
+    hideModal(emailLoginModal);
+    showModal(signupModal);
+});
+
+showLoginModalBtn.addEventListener('click', () => {
+    hideModal(signupModal);
+    showModal(emailLoginModal);
+});
+
+closeEmailLoginModalBtn.addEventListener('click', () => {
+    hideModal(emailLoginModal);
+    showModal(loginModal);
+});
+
+closeSignupModalBtn.addEventListener('click', () => {
+    hideModal(signupModal);
+    showModal(loginModal);
+});
+
+emailLoginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        console.log('Tentando fazer login com:', { email, password });
+        hideModal(emailLoginModal);
+    } catch (error) {
+        console.error('Erro ao fazer login:', error);
+    }
+});
+
+signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('signup-name').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
+    const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+    if (password !== confirmPassword) {
+        alert('As senhas não coincidem!');
+        return;
+    }
+
+    try {
+        console.log('Tentando criar conta:', { name, email, password });
+        hideModal(signupModal);
+        showModal(emailLoginModal);
+    } catch (error) {
+        console.error('Erro ao criar conta:', error);
+    }
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === emailLoginModal) {
+        hideModal(emailLoginModal);
+        showModal(loginModal);
+    }
+    if (e.target === signupModal) {
+        hideModal(signupModal);
+        showModal(loginModal);
+    }
+});
