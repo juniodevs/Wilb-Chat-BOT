@@ -1,12 +1,9 @@
-// Importar estilos
 import './style.css'
 import { initThemeTransition } from './themeManager.js'
 import { initializeI18n, updateLanguageUI, getTranslation, getCurrentLanguage } from './i18n.js'
 
-// Inicializar o gerenciador de tema imediatamente
 initThemeTransition();
 
-// --- Firebase Config ---
 let app, auth, db, googleProvider;
 
 async function initializeFirebase() {
@@ -14,7 +11,7 @@ async function initializeFirebase() {
     const config = await response.json();
     const firebaseConfig = config.firebase;
     const { initializeApp } = await import('firebase/app');
-    const { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } = await import('firebase/auth');
+    const { getAuth, GoogleAuthProvider, signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } = await import('firebase/auth');
     const { getFirestore, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = await import('firebase/firestore');
 
     app = initializeApp(firebaseConfig);
@@ -30,6 +27,7 @@ async function initializeFirebase() {
         signInWithEmailAndPassword,
         createUserWithEmailAndPassword,
         updateProfile,
+        sendPasswordResetEmail,
         collection,
         doc,
         addDoc,
@@ -46,7 +44,6 @@ async function initializeFirebase() {
 function afterFirebaseInit(firebaseFns) {
     const { signInWithPopup, signInAnonymously, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, collection, doc, addDoc, getDocs, updateDoc, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } = firebaseFns;
 
-    // --- DOM Elements ---
     const loginModal = document.getElementById('login-modal');
     const loginGoogleBtn = document.getElementById('login-google-btn');
     const loginAnonBtn = document.getElementById('login-anon-btn');
@@ -81,13 +78,11 @@ function afterFirebaseInit(firebaseFns) {
     const closeForgotPasswordModalBtn = document.getElementById('close-forgot-password-modal-btn');
     const backToLoginModalBtn = document.getElementById('back-to-login-modal');
 
-    // --- Constants ---
     const WILB_IMAGE_URL = '/images/WilbAvatar.png';
     const WILB_IMAGE_URL_ANON = '/images/WilbAvatarAnon.png';
     const WILB_POPUP_IMAGE = '/images/WilbMainImage.jpg';
     const DEFAULT_AVATAR_URL = WILB_IMAGE_URL_ANON;
 
-    // --- State ---
     let currentUser = null;
     let imageBase64 = null;
     let currentChatId = null;
@@ -96,7 +91,6 @@ function afterFirebaseInit(firebaseFns) {
     let contextTargetId = null;
     let unsubscribeHistory = null;
 
-    // Cache local para perguntas frequentes
     const localCache = {
         responses: new Map(),
         maxSize: 50,
@@ -129,10 +123,8 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Utility Functions ---
     const scrollToBottom = () => chatWindow.scrollTo({ top: chatWindow.scrollHeight, behavior: 'smooth' });
 
-    // Inicializar o gerenciador de tema
     initThemeTransition();
 
     const showWelcomeMessage = () => {
@@ -161,7 +153,6 @@ function afterFirebaseInit(firebaseFns) {
         sendBtn.disabled = !(messageInput.value.trim() || imageBase64);
     };
 
-    // --- UI Functions ---
     const updateUIForUser = (user) => {
         if (user) {
             loginModal.style.display = 'none';
@@ -247,7 +238,6 @@ function afterFirebaseInit(firebaseFns) {
         });
     };
 
-    // --- State Management ---
     const resetAppState = () => {
         if (unsubscribeHistory) unsubscribeHistory();
         unsubscribeHistory = null;
@@ -314,7 +304,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Authentication ---
     const handleSignOut = async () => {
         const isAnon = currentUser?.isAnonymous;
         if (isAnon) {
@@ -346,7 +335,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Image Handling ---
     const handleImageUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
@@ -367,7 +355,6 @@ function afterFirebaseInit(firebaseFns) {
         updateSendButtonState();
     };
 
-    // --- Message Handling ---
     const displayMessage = (message) => {
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex items-start gap-3 mb-6 message-appear ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`;
@@ -390,7 +377,7 @@ function afterFirebaseInit(firebaseFns) {
 
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
-        // Renderiza LaTeX com MathJax
+
         if (window.MathJax && window.MathJax.typesetPromise) {
             window.MathJax.typesetPromise([messageDiv]);
         }
@@ -419,7 +406,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- API Communication ---
     const getGeminiResponse = async (conversationHistory, newText, newBase64ImageData) => {
         const currentMode = modeSelect.value;
         const seriousMode = conversationModeSwitch && conversationModeSwitch.checked === true;
@@ -432,7 +418,6 @@ function afterFirebaseInit(firebaseFns) {
             }
         }
 
-        // Obter idioma atual usando a função do sistema de i18n
         const currentLanguage = getCurrentLanguage();
 
         const payload = {
@@ -441,7 +426,7 @@ function afterFirebaseInit(firebaseFns) {
             image: newBase64ImageData,
             mode: currentMode,
             seriousMode,
-            language: currentLanguage // Incluir idioma na requisição
+            language: currentLanguage 
         };
 
         const response = await fetch('/api/gemini/generate', {
@@ -462,12 +447,11 @@ function afterFirebaseInit(firebaseFns) {
         const result = await response.json();
 
         if (result && result.response) {
-            // Salva no cache local se não tem imagem
+
             if (!newBase64ImageData) {
                 localCache.set(newText, currentMode, result.response);
             }
 
-            // Log se veio do cache do servidor
             if (result.cached) {
                 console.log('Resposta veio do cache do servidor');
             }
@@ -478,7 +462,6 @@ function afterFirebaseInit(firebaseFns) {
         return "Não consegui gerar uma resposta.";
     };
 
-    // --- Chat Management ---
     const createNewChat = async (title, messages) => {
         if (!currentUser) return;
 
@@ -554,7 +537,6 @@ function afterFirebaseInit(firebaseFns) {
 
         showTypingIndicator();
 
-        // Esconde sugestões ao enviar a primeira mensagem
         const bar = document.getElementById('suggestions-bar');
         if (bar) bar.style.display = 'none';
 
@@ -584,7 +566,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- Chat History Management ---
     const exitRenameMode = async (chatId, newTitle) => {
         const chatIndex = historyData.findIndex(c => c.id === chatId);
         if (chatIndex === -1) return;
@@ -649,7 +630,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     };
 
-    // --- SUGESTÕES ALEATÓRIAS ---
     function getSuggestions() {
         const currentLanguage = getCurrentLanguage();
         return getTranslation('suggestions', currentLanguage) || [];
@@ -675,7 +655,6 @@ function afterFirebaseInit(firebaseFns) {
         bar.style.display = 'flex';
     }
 
-    // --- MODO DE CONVERSA (NORMAL/SÉRIO) ---
     let conversationStyle = 'normal';
     const modeSwitch = document.getElementById('mode-switch');
     if (modeSwitch) {
@@ -684,21 +663,18 @@ function afterFirebaseInit(firebaseFns) {
         });
     }
 
-    // Altera o modo de conversa enviado para o backend
     function getCurrentPromptMode() {
-        // Se for modo sério, retorna 'serio', senão mantém selecionado
+
         if (conversationStyle === 'serio') return 'serio';
         return modeSelect.value;
     }
 
-    // --- State Initialization ---
     const initializeState = () => {
         updateSendButtonState();
         showWelcomeMessage();
         renderSuggestions();
     };
 
-    // --- Event Listeners ---
     onAuthStateChanged(auth, async (user) => {
         currentUser = user;
         updateUIForUser(user);
@@ -716,7 +692,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Login/Logout events
     if (closeLoginModalBtn) {
         closeLoginModalBtn.addEventListener('click', () => {
             loginModal.style.display = 'none';
@@ -735,7 +710,6 @@ function afterFirebaseInit(firebaseFns) {
     loginAnonBtn.addEventListener('click', signInAnonymouslyFlow);
     logoutBtn.addEventListener('click', handleSignOut);
 
-    // Chat events
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
         handleSendMessage();
@@ -753,7 +727,6 @@ function afterFirebaseInit(firebaseFns) {
     removeImageBtn.addEventListener('click', removeImage);
     newChatBtn.addEventListener('click', startNewChat);
 
-    // User menu dropdown
     userMenuButton.addEventListener('click', (e) => {
         e.stopPropagation();
         userMenuDropdown.classList.toggle('hidden');
@@ -765,7 +738,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Mobile menu toggle
     menuToggleBtn.addEventListener('click', () => {
         historyPanel.classList.toggle('-translate-x-full');
         historyOverlay.classList.toggle('hidden');
@@ -776,7 +748,6 @@ function afterFirebaseInit(firebaseFns) {
         historyOverlay.classList.add('hidden');
     });
 
-    // History item clicks
     historyList.addEventListener('click', (e) => {
         const historyItem = e.target.closest('.history-item');
         const optionsBtn = e.target.closest('.options-btn');
@@ -798,13 +769,11 @@ function afterFirebaseInit(firebaseFns) {
             const chatId = historyItem.dataset.id;
             loadChat(chatId);
 
-            // Close mobile menu
             historyPanel.classList.add('-translate-x-full');
             historyOverlay.classList.add('hidden');
         }
     });
 
-    // Context menu actions
     contextMenu.addEventListener('click', (e) => {
         const action = e.target.dataset.action;
         if (!action || !contextTargetId) return;
@@ -829,7 +798,6 @@ function afterFirebaseInit(firebaseFns) {
         contextTargetId = null;
     });
 
-    // Close context menu on outside click
     document.addEventListener('click', (e) => {
         if (!contextMenu.contains(e.target)) {
             contextMenu.classList.add('hidden');
@@ -837,7 +805,6 @@ function afterFirebaseInit(firebaseFns) {
         }
     });
 
-    // Initialize app state
     initializeState();
 
     const conversationModeSwitch = document.getElementById('conversation-mode-switch');
@@ -868,7 +835,6 @@ function afterFirebaseInit(firebaseFns) {
 
     initializeI18n();
 
-    // Adicionar listeners para login e criação de conta por email/senha
     if (emailLoginForm) {
         emailLoginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -904,7 +870,7 @@ function afterFirebaseInit(firebaseFns) {
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 currentUser = userCredential.user;
-                // Atualizar nome do usuário
+
                 if (name && updateProfile) {
                     await updateProfile(currentUser, { displayName: name });
                 }
@@ -940,10 +906,33 @@ function afterFirebaseInit(firebaseFns) {
             showModal(emailLoginModal);
         });
     }
+
+    const forgotPasswordForm = document.getElementById('forgot-password-form');
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            if (!email) return;
+            try {
+                let sendPasswordResetEmailFn = null;
+                if (typeof sendPasswordResetEmail === 'undefined') {
+                    const firebaseAuth = await import('firebase/auth');
+                    sendPasswordResetEmailFn = firebaseAuth.sendPasswordResetEmail;
+                } else {
+                    sendPasswordResetEmailFn = sendPasswordResetEmail;
+                }
+                await sendPasswordResetEmailFn(auth, email);
+                alert(getTranslation('forgotPasswordSuccess') || 'Se o email estiver cadastrado, você receberá instruções para redefinir sua senha.');
+                hideModal(forgotPasswordModal);
+                showModal(emailLoginModal);
+            } catch (error) {
+                alert(getTranslation('forgotPasswordError') || 'Erro ao tentar recuperar a senha. Tente novamente.');
+            }
+        });
+    }
 }
 
 initializeFirebase();
-
 
 const darkModeToggle = document.getElementById('dark-mode-toggle');
 const body = document.body;
@@ -970,14 +959,12 @@ const toggleDarkMode = () => {
     }
 };
 
-// Check for saved theme preference on load
 const savedTheme = localStorage.getItem('theme');
 if (savedTheme === 'dark') {
     enableDarkMode();
 } else if (savedTheme === 'light') {
     disableDarkMode();
 } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    // If no preference, check system preference
     enableDarkMode();
 } else {
     disableDarkMode();
@@ -1054,7 +1041,6 @@ closeSignupModalBtn.addEventListener('click', () => {
 });
 
 function updateAuthModalsLanguage() {
-    // Modal de login com email
     if (emailLoginModal) {
         const title = emailLoginModal.querySelector('h2');
         if (title) title.textContent = getTranslation('emailLoginTitle');
@@ -1075,7 +1061,7 @@ function updateAuthModalsLanguage() {
             noAccount.innerHTML = `${getTranslation('noAccount')} <button id="show-signup-modal" class="text-purple-600 font-semibold hover:text-purple-700">${getTranslation('createAccount')}</button>`;
         }
     }
-    // Modal de criar conta
+
     if (signupModal) {
         const title = signupModal.querySelector('h2');
         if (title) title.textContent = getTranslation('signupTitle');
@@ -1104,13 +1090,12 @@ function updateAuthModalsLanguage() {
             alreadyAccount.innerHTML = `${getTranslation('alreadyHaveAccount')} <button id="show-login-modal" class="text-purple-600 font-semibold hover:text-purple-700">${getTranslation('doLogin')}</button>`;
         }
     }
-    // Botão de login com email no modal principal
+
     if (loginEmailBtn) {
         const span = loginEmailBtn.querySelector('span');
         if (span) span.textContent = getTranslation('loginWithEmail');
     }
 
-    // Reatribuir listeners dos botões dinâmicos
     const newShowSignupModalBtn = document.getElementById('show-signup-modal');
     if (newShowSignupModalBtn) {
         newShowSignupModalBtn.onclick = () => {
@@ -1127,10 +1112,8 @@ function updateAuthModalsLanguage() {
     }
 }
 
-// Chamar ao inicializar
 updateAuthModalsLanguage();
 
-// Atualizar ao trocar idioma
 window.addEventListener('DOMContentLoaded', () => {
     const languageDropdown = document.getElementById('language-dropdown');
     if (languageDropdown) {
