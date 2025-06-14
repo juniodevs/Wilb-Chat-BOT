@@ -28,6 +28,7 @@
     "dompurify": "^3.2.6",
     "dotenv": "^16.4.7",
     "express": "^4.21.1",
+    "express-rate-limit": "^7.5.0",
     "firebase": "^11.6.1",
     "howler": "^2.2.4",
     "i18next": "^25.2.1",
