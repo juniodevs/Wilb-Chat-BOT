@@ -233,7 +233,7 @@ function afterFirebaseInit(firebaseFns) {
                 renameInput.select();
                 renameInput.addEventListener('blur', () => exitRenameMode(item.id, renameInput.value));
                 renameInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') exitRenameMode(item.id, renameInput.value);
+                    if (e.key === 'Enter') exitRenameMode(item.id, null);
                     if (e.key === 'Escape') exitRenameMode(item.id, null);
                 });
             }
@@ -994,7 +994,7 @@ signupForm.addEventListener('submit', async (e) => {
     const confirmPassword = document.getElementById('signup-confirm-password').value;
 
     if (password !== confirmPassword) {
-        alert('As senhas não coincidem!');
+        alert(getTranslation('passwordMismatch'));
         return;
     }
 
@@ -1007,13 +1007,89 @@ signupForm.addEventListener('submit', async (e) => {
     }
 });
 
-window.addEventListener('click', (e) => {
-    if (e.target === emailLoginModal) {
-        hideModal(emailLoginModal);
-        showModal(loginModal);
+function updateAuthModalsLanguage() {
+    // Modal de login com email
+    if (emailLoginModal) {
+        const title = emailLoginModal.querySelector('h2');
+        if (title) title.textContent = getTranslation('emailLoginTitle');
+        const desc = emailLoginModal.querySelector('p');
+        if (desc) desc.textContent = getTranslation('emailLoginDescription');
+        const emailInput = emailLoginModal.querySelector('input#email');
+        if (emailInput) emailInput.placeholder = getTranslation('emailLabel');
+        const passwordInput = emailLoginModal.querySelector('input#password');
+        if (passwordInput) passwordInput.placeholder = getTranslation('passwordLabel');
+        const emailLabel = emailLoginModal.querySelector('label[for="email"]');
+        if (emailLabel) emailLabel.textContent = getTranslation('emailLabel');
+        const passwordLabel = emailLoginModal.querySelector('label[for="password"]');
+        if (passwordLabel) passwordLabel.textContent = getTranslation('passwordLabel');
+        const loginBtn = emailLoginModal.querySelector('button[type="submit"]');
+        if (loginBtn) loginBtn.textContent = getTranslation('loginBtn');
+        const noAccount = emailLoginModal.querySelector('.mt-4 p');
+        if (noAccount) {
+            noAccount.innerHTML = `${getTranslation('noAccount')} <button id="show-signup-modal" class="text-purple-600 font-semibold hover:text-purple-700">${getTranslation('createAccount')}</button>`;
+        }
     }
-    if (e.target === signupModal) {
-        hideModal(signupModal);
-        showModal(loginModal);
+    // Modal de criar conta
+    if (signupModal) {
+        const title = signupModal.querySelector('h2');
+        if (title) title.textContent = getTranslation('signupTitle');
+        const desc = signupModal.querySelector('p');
+        if (desc) desc.textContent = getTranslation('signupDescription');
+        const nameInput = signupModal.querySelector('input#signup-name');
+        if (nameInput) nameInput.placeholder = getTranslation('nameLabel');
+        const emailInput = signupModal.querySelector('input#signup-email');
+        if (emailInput) emailInput.placeholder = getTranslation('emailLabel');
+        const passwordInput = signupModal.querySelector('input#signup-password');
+        if (passwordInput) passwordInput.placeholder = getTranslation('passwordLabel');
+        const confirmPasswordInput = signupModal.querySelector('input#signup-confirm-password');
+        if (confirmPasswordInput) confirmPasswordInput.placeholder = getTranslation('confirmPasswordLabel');
+        const nameLabel = signupModal.querySelector('label[for="signup-name"]');
+        if (nameLabel) nameLabel.textContent = getTranslation('nameLabel');
+        const emailLabel = signupModal.querySelector('label[for="signup-email"]');
+        if (emailLabel) emailLabel.textContent = getTranslation('emailLabel');
+        const passwordLabel = signupModal.querySelector('label[for="signup-password"]');
+        if (passwordLabel) passwordLabel.textContent = getTranslation('passwordLabel');
+        const confirmPasswordLabel = signupModal.querySelector('label[for="signup-confirm-password"]');
+        if (confirmPasswordLabel) confirmPasswordLabel.textContent = getTranslation('confirmPasswordLabel');
+        const signupBtn = signupModal.querySelector('button[type="submit"]');
+        if (signupBtn) signupBtn.textContent = getTranslation('signupBtn');
+        const alreadyAccount = signupModal.querySelector('.mt-4 p');
+        if (alreadyAccount) {
+            alreadyAccount.innerHTML = `${getTranslation('alreadyHaveAccount')} <button id="show-login-modal" class="text-purple-600 font-semibold hover:text-purple-700">${getTranslation('doLogin')}</button>`;
+        }
+    }
+    // Botão de login com email no modal principal
+    if (loginEmailBtn) {
+        const span = loginEmailBtn.querySelector('span');
+        if (span) span.textContent = getTranslation('loginWithEmail');
+    }
+
+    // Reatribuir listeners dos botões dinâmicos
+    const newShowSignupModalBtn = document.getElementById('show-signup-modal');
+    if (newShowSignupModalBtn) {
+        newShowSignupModalBtn.onclick = () => {
+            hideModal(emailLoginModal);
+            showModal(signupModal);
+        };
+    }
+    const newShowLoginModalBtn = document.getElementById('show-login-modal');
+    if (newShowLoginModalBtn) {
+        newShowLoginModalBtn.onclick = () => {
+            hideModal(signupModal);
+            showModal(emailLoginModal);
+        };
+    }
+}
+
+// Chamar ao inicializar
+updateAuthModalsLanguage();
+
+// Atualizar ao trocar idioma
+window.addEventListener('DOMContentLoaded', () => {
+    const languageDropdown = document.getElementById('language-dropdown');
+    if (languageDropdown) {
+        languageDropdown.addEventListener('change', () => {
+            setTimeout(updateAuthModalsLanguage, 700);
+        });
     }
 });

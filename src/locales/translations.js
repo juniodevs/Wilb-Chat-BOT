@@ -57,7 +57,23 @@ export const translations = {
       'Dicas para ENEM',
       'Como estudar redação?',
       'Como revisar conteúdos rapidamente?'
-    ]
+    ],
+    loginWithEmail: "Entrar com Email",
+    emailLoginTitle: "Entrar com Email",
+    emailLoginDescription: "Digite seu email e senha para entrar",
+    emailLabel: "Email",
+    passwordLabel: "Senha",
+    loginBtn: "Entrar",
+    noAccount: "Não tem uma conta?",
+    createAccount: "Criar Conta",
+    signupTitle: "Criar Conta",
+    signupDescription: "Preencha os dados para criar sua conta",
+    nameLabel: "Nome",
+    confirmPasswordLabel: "Confirmar Senha",
+    signupBtn: "Criar Conta",
+    alreadyHaveAccount: "Já tem uma conta?",
+    doLogin: "Fazer Login",
+    passwordMismatch: "As senhas não coincidem!"
   },
   'en': {
     welcome: "Hi! I'm Wilb, your study companion 💜✨\nShall we rock together?",
@@ -117,7 +133,23 @@ export const translations = {
       'Tips for SAT/ENEM',
       'How to study essay writing?',
       'How to review content quickly?'
-    ]
+    ],
+    loginWithEmail: "Login with Email",
+    emailLoginTitle: "Login with Email",
+    emailLoginDescription: "Enter your email and password to log in",
+    emailLabel: "Email",
+    passwordLabel: "Password",
+    loginBtn: "Login",
+    noAccount: "Don't have an account?",
+    createAccount: "Create Account",
+    signupTitle: "Create Account",
+    signupDescription: "Fill in the details to create your account",
+    nameLabel: "Name",
+    confirmPasswordLabel: "Confirm Password",
+    signupBtn: "Create Account",
+    alreadyHaveAccount: "Already have an account?",
+    doLogin: "Login",
+    passwordMismatch: "Passwords do not match!"
   }
 };
 
