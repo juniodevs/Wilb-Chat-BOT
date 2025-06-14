@@ -92,6 +92,7 @@ function afterFirebaseInit(firebaseFns) {
     let contextTargetId = null;
     let unsubscribeHistory = null;
     let chatIdToDelete = null;
+    let isWaitingWilbResponse = false;
 
     const localCache = {
         responses: new Map(),
@@ -521,8 +522,13 @@ function afterFirebaseInit(firebaseFns) {
     };
 
     const handleSendMessage = async () => {
+        if (isWaitingWilbResponse) return;
         const userText = messageInput.value.trim();
         if (!userText && !imageBase64) return;
+
+        isWaitingWilbResponse = true;
+        sendBtn.disabled = true;
+        newChatBtn.disabled = true;
 
         const messageForDisplay = {
             sender: 'user',
@@ -569,6 +575,13 @@ function afterFirebaseInit(firebaseFns) {
             currentMessages.push(errorMessage);
             displayMessage(errorMessage);
         }
+        
+        setTimeout(() => {
+            isWaitingWilbResponse = false;
+            sendBtn.disabled = false;
+            newChatBtn.disabled = false;
+            updateSendButtonState();
+        }, 3000);
     };
 
     const exitRenameMode = async (chatId, newTitle) => {
@@ -740,20 +753,22 @@ function afterFirebaseInit(firebaseFns) {
 
     chatForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        handleSendMessage();
+        if (!isWaitingWilbResponse) handleSendMessage();
     });
 
     messageInput.addEventListener('input', updateSendButtonState);
     messageInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSendMessage();
+            if (!isWaitingWilbResponse) handleSendMessage();
         }
     });
 
     imageUploadInput.addEventListener('change', handleImageUpload);
     removeImageBtn.addEventListener('click', removeImage);
-    newChatBtn.addEventListener('click', startNewChat);
+    newChatBtn.addEventListener('click', () => {
+        if (!isWaitingWilbResponse) startNewChat();
+    });
 
     userMenuButton.addEventListener('click', (e) => {
         e.stopPropagation();
