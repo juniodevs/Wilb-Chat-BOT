@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,24 +14,30 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 </head>
+
 <body class="bg-slate-100 w-screen h-screen min-h-0 min-w-0 overflow-hidden">
     <div id="login-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm message-appear relative">
-            <button id="close-login-modal-btn" class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors" aria-label="Fechar Modal">&times;</button>
+            <button id="close-login-modal-btn"
+                class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors"
+                aria-label="Fechar Modal">&times;</button>
 
             <img src="images/WilbMainImage.jpg" alt="Wilb Logo" class="mx-auto mb-4 rounded-full w-20 h-20">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Bem-vindo ao Assistente! Wilb</h2>
             <p class="text-slate-500 mb-6">Faça login para salvar seu progresso ou continue como anônimo.</p>
             <div class="space-y-3">
-                <button id="login-google-btn" class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-3">
+                <button id="login-google-btn"
+                    class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-3">
                     <i class="fa-brands fa-google"></i>
                     <span>Login com Google</span>
                 </button>
-                <button id="login-email-btn" class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-3">
+                <button id="login-email-btn"
+                    class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all flex items-center justify-center gap-3">
                     <i class="fa-solid fa-envelope"></i>
                     <span>Entrar com Email</span>
                 </button>
-                <button id="login-anon-btn" class="w-full bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-lg hover:bg-slate-300 transition-all">
+                <button id="login-anon-btn"
+                    class="w-full bg-slate-200 text-slate-700 font-semibold py-3 px-4 rounded-lg hover:bg-slate-300 transition-all">
                     Continuar anônimo
                 </button>
             </div>
@@ -40,7 +47,9 @@
     <!-- Modal de Login com Email -->
     <div id="email-login-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm message-appear relative">
-            <button id="close-email-login-modal-btn" class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors" aria-label="Fechar Modal">&times;</button>
+            <button id="close-email-login-modal-btn"
+                class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors"
+                aria-label="Fechar Modal">&times;</button>
 
             <img src="images/WilbMainImage.jpg" alt="Wilb Logo" class="mx-auto mb-4 rounded-full w-20 h-20">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Entrar com Email</h2>
@@ -49,20 +58,27 @@
             <form id="email-login-form" class="space-y-4">
                 <div class="text-left">
                     <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input type="email" id="email" name="email" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="seu@email.com">
+                    <input type="email" id="email" name="email" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="seu@email.com">
                 </div>
                 <div class="text-left">
                     <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                    <input type="password" id="password" name="password" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Sua senha">
+                    <input type="password" id="password" name="password" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Sua senha">
                 </div>
-                <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all">
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all">
                     Entrar
                 </button>
             </form>
 
             <div class="mt-4 text-sm flex flex-col gap-2">
-                <p class="text-slate-500">Não tem uma conta? <button id="show-signup-modal" class="text-purple-600 font-semibold hover:text-purple-700">Criar Conta</button></p>
-                <button id="show-forgot-password-modal" class="text-purple-600 font-semibold hover:text-purple-700 w-fit mx-auto">Esqueceu a senha?</button>
+                <p class="text-slate-500">Não tem uma conta? <button id="show-signup-modal"
+                        class="text-purple-600 font-semibold hover:text-purple-700">Criar Conta</button></p>
+                <button id="show-forgot-password-modal"
+                    class="text-purple-600 font-semibold hover:text-purple-700 w-fit mx-auto">Esqueceu a senha?</button>
             </div>
         </div>
     </div>
@@ -70,21 +86,27 @@
     <!-- Modal de Esqueceu a Senha -->
     <div id="forgot-password-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm message-appear relative">
-            <button id="close-forgot-password-modal-btn" class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors" aria-label="Fechar Modal">&times;</button>
+            <button id="close-forgot-password-modal-btn"
+                class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors"
+                aria-label="Fechar Modal">&times;</button>
             <img src="images/WilbMainImage.jpg" alt="Wilb Logo" class="mx-auto mb-4 rounded-full w-20 h-20">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Recuperar Senha</h2>
             <p class="text-slate-500 mb-6">Digite seu email para receber instruções de recuperação de senha.</p>
             <form id="forgot-password-form" class="space-y-4">
                 <div class="text-left">
                     <label for="forgot-email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input type="email" id="forgot-email" name="email" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="seu@email.com">
+                    <input type="email" id="forgot-email" name="email" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="seu@email.com">
                 </div>
-                <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all">
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all">
                     Enviar
                 </button>
             </form>
             <div class="mt-4 text-sm">
-                <button id="back-to-login-modal" class="text-purple-600 font-semibold hover:text-purple-700">Voltar ao Login</button>
+                <button id="back-to-login-modal" class="text-purple-600 font-semibold hover:text-purple-700">Voltar ao
+                    Login</button>
             </div>
         </div>
     </div>
@@ -92,7 +114,9 @@
     <!-- Modal de Criar Conta -->
     <div id="signup-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm message-appear relative">
-            <button id="close-signup-modal-btn" class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors" aria-label="Fechar Modal">&times;</button>
+            <button id="close-signup-modal-btn"
+                class="absolute top-2 right-3 text-2xl text-slate-400 hover:text-slate-800 transition-colors"
+                aria-label="Fechar Modal">&times;</button>
 
             <img src="images/WilbMainImage.jpg" alt="Wilb Logo" class="mx-auto mb-4 rounded-full w-20 h-20">
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Criar Conta</h2>
@@ -101,27 +125,38 @@
             <form id="signup-form" class="space-y-4">
                 <div class="text-left">
                     <label for="signup-name" class="block text-sm font-medium text-slate-700 mb-1">Nome</label>
-                    <input type="text" id="signup-name" name="name" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Seu nome">
+                    <input type="text" id="signup-name" name="name" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Seu nome">
                 </div>
                 <div class="text-left">
                     <label for="signup-email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input type="email" id="signup-email" name="email" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="seu@email.com">
+                    <input type="email" id="signup-email" name="email" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="seu@email.com">
                 </div>
                 <div class="text-left">
                     <label for="signup-password" class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                    <input type="password" id="signup-password" name="password" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Crie uma senha">
+                    <input type="password" id="signup-password" name="password" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Crie uma senha">
                 </div>
                 <div class="text-left">
-                    <label for="signup-confirm-password" class="block text-sm font-medium text-slate-700 mb-1">Confirmar Senha</label>
-                    <input type="password" id="signup-confirm-password" name="confirm-password" required class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Confirme sua senha">
+                    <label for="signup-confirm-password" class="block text-sm font-medium text-slate-700 mb-1">Confirmar
+                        Senha</label>
+                    <input type="password" id="signup-confirm-password" name="confirm-password" required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Confirme sua senha">
                 </div>
-                <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all">
+                <button type="submit"
+                    class="w-full bg-purple-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all">
                     Criar Conta
                 </button>
             </form>
 
             <div class="mt-4 text-sm">
-                <p class="text-slate-500">Já tem uma conta? <button id="show-login-modal" class="text-purple-600 font-semibold hover:text-purple-700">Fazer Login</button></p>
+                <p class="text-slate-500">Já tem uma conta? <button id="show-login-modal"
+                        class="text-purple-600 font-semibold hover:text-purple-700">Fazer Login</button></p>
             </div>
         </div>
     </div>
@@ -139,56 +174,67 @@
                 </div>
             </div>
             <div class="flex items-center gap-6">
-                <div id="dark-mode-toggle" class="flex items-center gap-3 bg-slate-700 px-5 py-2 rounded-full cursor-pointer text-base">
+                <div id="dark-mode-toggle"
+                    class="flex items-center gap-3 bg-slate-700 px-5 py-2 rounded-full cursor-pointer text-base">
                     <i class="fa-solid fa-moon text-white text-lg"></i>
                     <span class="text-sm font-semibold text-white">Modo Escuro</span>
                 </div>
-                <div id="language-selector" class="flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-full cursor-pointer">
+                <div id="language-selector"
+                    class="flex items-center gap-2 bg-slate-700 px-3 py-1 rounded-full cursor-pointer">
                     <i class="fa-solid fa-globe text-white text-lg"></i>
-                    <select id="language-dropdown" class="bg-slate-700 text-white text-sm rounded-md focus:outline-none">
+                    <select id="language-dropdown"
+                        class="bg-slate-700 text-white text-sm rounded-md focus:outline-none">
                         <option value="pt-br" selected>Português</option>
                         <option value="en">English</option>
                     </select>
                 </div>
                 <div id="user-info-container" class="relative">
-                     <button id="header-login-btn" class="hidden bg-purple-600 text-white font-semibold py-2 px-3 rounded-lg text-sm hover:bg-purple-700 transition-all items-center justify-center gap-2">
-                     <i class="fa-solid fa-right-to-bracket"></i>
-                     <span>Entrar</span>
-                 </button>
-                 <button id="user-menu-button" class="hidden items-center gap-3 p-1 rounded-full hover:bg-slate-700">
-                     <img id="user-photo" src="" alt="Foto do usuário" class="w-9 h-9 rounded-full">
-                 </button>
-                 <div id="user-menu-dropdown" class="hidden absolute top-14 right-0 bg-white text-slate-800 rounded-lg shadow-xl w-64 origin-top-right">
-                     <div class="p-4 border-b border-slate-200">
-                         <div class="flex items-center gap-3">
-                             <img id="dropdown-user-photo" src="" alt="Foto do usuário" class="w-12 h-12 rounded-full">
-                             <div>
-                                 <p id="dropdown-user-name" class="font-semibold truncate"></p>
-                                 <p id="dropdown-user-email" class="text-xs text-slate-500 truncate"></p>
-                             </div>
-                         </div>
-                     </div>
-                     <div class="p-2">
-                         <button id="logout-btn" class="w-full text-left p-2 rounded-md hover:bg-slate-100 flex items-center gap-3 text-sm">
-                             <i class="fa-solid fa-right-from-bracket w-5 text-center text-slate-500"></i>
-                             <span>Sair</span>
-                         </button>
-                     </div>
-                 </div>
+                    <button id="header-login-btn"
+                        class="hidden bg-purple-600 text-white font-semibold py-2 px-3 rounded-lg text-sm hover:bg-purple-700 transition-all items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Entrar</span>
+                    </button>
+                    <button id="user-menu-button" class="hidden items-center gap-3 p-1 rounded-full hover:bg-slate-700">
+                        <img id="user-photo" src="" alt="Foto do usuário" class="w-9 h-9 rounded-full">
+                    </button>
+                    <div id="user-menu-dropdown"
+                        class="hidden absolute top-14 right-0 bg-white text-slate-800 rounded-lg shadow-xl w-64 origin-top-right">
+                        <div class="p-4 border-b border-slate-200">
+                            <div class="flex items-center gap-3">
+                                <img id="dropdown-user-photo" src="" alt="Foto do usuário"
+                                    class="w-12 h-12 rounded-full">
+                                <div>
+                                    <p id="dropdown-user-name" class="font-semibold truncate"></p>
+                                    <p id="dropdown-user-email" class="text-xs text-slate-500 truncate"></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <button id="logout-btn"
+                                class="w-full text-left p-2 rounded-md hover:bg-slate-100 flex items-center gap-3 text-sm">
+                                <i class="fa-solid fa-right-from-bracket w-5 text-center text-slate-500"></i>
+                                <span>Sair</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
 
         <div id="anon-warning" class="hidden bg-yellow-100 text-yellow-800 text-center p-2 text-xs">
-            <i class="fa-solid fa-triangle-exclamation"></i> Você está no modo anônimo. Para salvar seu histórico, <button id="login-from-warning" class="font-bold underline hover:text-yellow-900">faça login</button>.
+            <i class="fa-solid fa-triangle-exclamation"></i> Você está no modo anônimo. Para salvar seu histórico,
+            <button id="login-from-warning" class="font-bold underline hover:text-yellow-900">faça login</button>.
         </div>
 
         <main class="flex-1 flex flex-row overflow-hidden relative w-full h-full">
             <div id="history-overlay" class="hidden fixed inset-0 bg-black/50 z-30 md:hidden"></div>
-            <div id="history-panel" class="absolute md:relative inset-y-0 left-0 z-40 w-4/5 max-w-xs md:w-1/3 lg:w-1/4 bg-slate-50 border-r border-slate-200 p-4 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+            <div id="history-panel"
+                class="absolute md:relative inset-y-0 left-0 z-40 w-4/5 max-w-xs md:w-1/3 lg:w-1/4 bg-slate-50 border-r border-slate-200 p-4 flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-slate-700">Histórico</h2>
-                    <button id="new-chat-btn" class="text-slate-500 hover:text-purple-600 hover:scale-110 transition-transform" title="Novo Chat">
+                    <button id="new-chat-btn"
+                        class="text-slate-500 hover:text-purple-600 hover:scale-110 transition-transform"
+                        title="Novo Chat">
                         <i class="fa-solid fa-plus-square text-xl"></i>
                     </button>
                 </div>
@@ -199,18 +245,23 @@
                 <div class="flex items-center justify-between p-3 pb-0">
                     <div id="suggestions-bar" class="flex flex-wrap gap-2 flex-1"></div>
                     <div id="conversation-mode-container" class="flex items-center gap-2 ml-4">
-                        <div class="flex items-center gap-2 bg-white dark:bg-slate-700 px-3 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-600">
+                        <div
+                            class="flex items-center gap-2 bg-white dark:bg-slate-700 px-3 py-2 rounded-full shadow-sm border border-slate-200 dark:border-slate-600">
                             <i class="fa-solid fa-comments text-purple-600 text-sm"></i>
                             <span class="text-xs font-medium text-slate-600 dark:text-slate-300">Modo:</span>
                             <label class="relative inline-flex items-center cursor-pointer">
                                 <input type="checkbox" id="conversation-mode-switch" class="sr-only peer">
-                                <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                                <div
+                                    class="w-10 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500 rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-5 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600">
+                                </div>
                             </label>
-                            <span id="conversation-mode-label" class="text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap"></span>
-                            <select id="interaction-mode-select" class="ml-3 p-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[170px]">
-                                <option value="ajuda" selected>Modo: Ajuda com Exercício</option>
+                            <span id="conversation-mode-label"
+                                class="text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap"></span>
+                            <select id="interaction-mode-select"
+                                class="ml-3 p-2 text-xs text-slate-600 bg-slate-100 border border-slate-200 rounded-md appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[170px]">
+                                <option value="resposta_direta" selected>Modo: Resposta Direta</option>
+                                <option value="ajuda">Modo: Ajuda com Exercício</option>
                                 <option value="dicas">Modo: Dicas de Estudo</option>
-                                <option value="resposta_direta">Modo: Resposta Direta</option>
                                 <option value="explicacao_profunda">Modo: Explicação Profunda</option>
                                 <option value="correcao">Modo: Correção de Texto</option>
                             </select>
@@ -221,45 +272,67 @@
                 <div class="bg-white p-2 md:p-4 border-t border-slate-200">
                     <div id="image-preview-container" class="hidden mb-2 relative w-28">
                         <img id="image-preview" class="rounded-lg w-full h-auto" alt="Pré-visualização da imagem">
-                        <button id="remove-image-btn" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg hover:bg-red-600 scale-100 hover:scale-110 transition-transform">&times;</button>
+                        <button id="remove-image-btn"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg hover:bg-red-600 scale-100 hover:scale-110 transition-transform">&times;</button>
                     </div>
                     <form id="chat-form" class="space-y-3">
                         <div class="relative">
                         </div>
                         <div class="flex items-end gap-2 md:gap-3">
-                            <label for="image-upload" class="cursor-pointer text-slate-500 hover:text-purple-600 transition-colors p-3"><i class="fa-solid fa-camera text-xl"></i><input type="file" id="image-upload" class="hidden" accept="image/*"></label>
+                            <label for="image-upload"
+                                class="cursor-pointer text-slate-500 hover:text-purple-600 transition-colors p-3"><i
+                                    class="fa-solid fa-camera text-xl"></i><input type="file" id="image-upload"
+                                    class="hidden" accept="image/*"></label>
                             <div class="flex-1 relative">
-                                <textarea id="message-input" maxlength="4000" class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none pr-16" rows="1" placeholder="Digite sua dúvida..." style="overflow-y:auto;max-height:160px;"></textarea>
-                                <span id="char-counter" class="absolute bottom-2 right-4 text-xs text-slate-400 select-none">0/4000</span>
+                                <textarea id="message-input" maxlength="4000"
+                                    class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none pr-16"
+                                    rows="1" placeholder="Digite sua dúvida..."
+                                    style="overflow-y:auto;max-height:160px;"></textarea>
+                                <span id="char-counter"
+                                    class="absolute bottom-2 right-4 text-xs text-slate-400 select-none">0/4000</span>
                             </div>
-                            <button type="submit" id="send-btn" class="bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all shadow disabled:bg-slate-400 disabled:cursor-not-allowed scale-100 hover:scale-105 active:scale-95 disabled:hover:scale-100"><i class="fa-solid fa-paper-plane"></i></button>
+                            <button type="submit" id="send-btn"
+                                class="bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-all shadow disabled:bg-slate-400 disabled:cursor-not-allowed scale-100 hover:scale-105 active:scale-95 disabled:hover:scale-100"><i
+                                    class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </form>
                 </div>
             </div>
         </main>
-        <footer class="bg-slate-50 border-t border-slate-200 px-4 py-2 text-xs text-slate-500 flex-wrap flex-col sm:flex-row gap-2 sm:gap-0 flex justify-between items-center">
-            <span>Criado por <a href="https://www.linkedin.com/in/juniorveras/" class="footer-link" target="_blank" rel="noopener noreferrer">Júnior Veras</a></span>
+        <footer
+            class="bg-slate-50 border-t border-slate-200 px-4 py-2 text-xs text-slate-500 flex-wrap flex-col sm:flex-row gap-2 sm:gap-0 flex justify-between items-center">
+            <span>Criado por <a href="https://www.linkedin.com/in/juniorveras/" class="footer-link" target="_blank"
+                    rel="noopener noreferrer">Júnior Veras</a></span>
             <span class="text-slate-400 hidden sm:inline">O Wilb pode cometer erros. Cheque as respostas.</span>
-            <a href="https://instagram.com/juniodevs" target="_blank" rel="noopener noreferrer" class="bug-report-btn footer-link">Reportar um Bug</a>
+            <a href="https://instagram.com/juniodevs" target="_blank" rel="noopener noreferrer"
+                class="bug-report-btn footer-link">Reportar um Bug</a>
         </footer>
     </div>
-    <div id="context-menu" class="hidden absolute bg-white shadow-lg rounded-md py-2 z-50 text-sm text-slate-700 w-40 origin-top-right">
-        <button data-action="rename" class="px-4 py-2 hover:bg-slate-100 w-full text-left flex items-center gap-3"><i class="fa-solid fa-i-cursor w-4"></i> Renomear</button>
-        <button data-action="pin" class="px-4 py-2 hover:bg-slate-100 w-full text-left flex items-center gap-3"><i class="fa-solid fa-thumbtack w-4"></i> Fixar</button>
+    <div id="context-menu"
+        class="hidden absolute bg-white shadow-lg rounded-md py-2 z-50 text-sm text-slate-700 w-40 origin-top-right">
+        <button data-action="rename" class="px-4 py-2 hover:bg-slate-100 w-full text-left flex items-center gap-3"><i
+                class="fa-solid fa-i-cursor w-4"></i> Renomear</button>
+        <button data-action="pin" class="px-4 py-2 hover:bg-slate-100 w-full text-left flex items-center gap-3"><i
+                class="fa-solid fa-thumbtack w-4"></i> Fixar</button>
         <div class="my-1 border-t border-slate-100"></div>
-        <button data-action="delete" class="px-4 py-2 hover:bg-red-50 text-red-600 w-full text-left flex items-center gap-3"><i class="fa-solid fa-trash-can w-4"></i> Excluir</button>
+        <button data-action="delete"
+            class="px-4 py-2 hover:bg-red-50 text-red-600 w-full text-left flex items-center gap-3"><i
+                class="fa-solid fa-trash-can w-4"></i> Excluir</button>
     </div>
-    <div id="delete-chat-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden">
+    <div id="delete-chat-modal"
+        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 hidden">
         <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
             <h2 class="text-lg font-bold mb-2" id="delete-chat-title">Excluir Chat</h2>
             <p class="mb-4" id="delete-chat-message">Tem certeza que deseja excluir este chat?</p>
             <div class="flex justify-center gap-4">
-                <button id="delete-chat-yes-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"></button>
-                <button id="delete-chat-no-btn" class="bg-slate-300 text-slate-800 px-4 py-2 rounded hover:bg-slate-400 font-semibold"></button>
+                <button id="delete-chat-yes-btn"
+                    class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"></button>
+                <button id="delete-chat-no-btn"
+                    class="bg-slate-300 text-slate-800 px-4 py-2 rounded hover:bg-slate-400 font-semibold"></button>
             </div>
         </div>
     </div>
     <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

@@ -432,7 +432,7 @@ function afterFirebaseInit(firebaseFns) {
             image: newBase64ImageData,
             mode: currentMode,
             seriousMode,
-            language: currentLanguage 
+            language: currentLanguage
         };
 
         const response = await fetch('/api/gemini/generate', {
@@ -575,7 +575,7 @@ function afterFirebaseInit(firebaseFns) {
             currentMessages.push(errorMessage);
             displayMessage(errorMessage);
         }
-        
+
         setTimeout(() => {
             isWaitingWilbResponse = false;
             sendBtn.disabled = false;
@@ -973,7 +973,7 @@ function afterFirebaseInit(firebaseFns) {
             }
         });
     }
-    
+
     const yesBtn = document.getElementById('delete-chat-yes-btn');
     const noBtn = document.getElementById('delete-chat-no-btn');
     if (yesBtn) {
@@ -1028,7 +1028,7 @@ if (savedTheme === 'dark') {
 }
 
 darkModeToggle.addEventListener('click', toggleDarkMode);
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const textarea = document.getElementById('message-input');
     const counter = document.getElementById('char-counter');
     const maxHeight = 160;
@@ -1037,7 +1037,7 @@ document.addEventListener('DOMContentLoaded', function() {
             textarea.style.height = 'auto';
             textarea.style.height = Math.min(textarea.scrollHeight, maxHeight) + 'px';
         }
-        textarea.addEventListener('input', function() {
+        textarea.addEventListener('input', function () {
             autoResize();
             if (counter) {
                 counter.textContent = `${textarea.value.length}/4000`;
@@ -1213,7 +1213,7 @@ function hideLoginErrorModal() {
 }
 
 function adicionarEventoFecharLoginErrorModal() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target && e.target.id === 'close-login-error-modal-btn') {
             hideLoginErrorModal();
         }
@@ -1254,7 +1254,7 @@ function hideForgotPasswordFeedbackModal() {
 }
 
 function adicionarEventoFecharForgotPasswordFeedbackModal() {
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target && e.target.id === 'close-forgot-password-feedback-modal-btn') {
             hideForgotPasswordFeedbackModal();
         }
