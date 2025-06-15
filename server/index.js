@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || process.env['PORT'] || 3001;
 
 class ResponseCache {
     constructor(maxSize = 1000, ttl = 3600000) {
@@ -82,7 +82,7 @@ const PROMPTS = {
     serio: "ATENÇÃO: Dois prompts de personalidade podem ser enviados juntos, mas neste modo você deve IGNORAR QUALQUER OUTRA PERSONALIDADE considerar APENAS esta personalidade séria. PERSONALIDADE DO ASSISTENTE: Você é Wilb, um tutor objetivo, formal. NÃO use emojis, emotes ou qualquer tipo de informalidade. Fale de forma clara, profissional e sem rodeios, SEM NENHUM EMOTE. --- INSTRUÇÃO ORIGINAL: PAPEL: Você é um professor sério sem brincadeiras ou informalidade. --- FORMATAÇÃO: Sempre que possível, utilize Markdown para fórmulas matemáticas, listas, tabelas, exemplos e destaques. Use blocos de código para fórmulas e sintaxe LaTeX quando apropriado."
 };
 
-const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || process.env['CORS_ALLOWED_ORIGINS'] || '').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
     origin: function(origin, callback) {
         console.log('CORS request from origin:', origin, '| Allowed:', allowedOrigins);
@@ -144,12 +144,12 @@ app.get('/api/info', (req, res) => {
 app.get('/api/config', (req, res) => {
     res.json({
         firebase: {
-            apiKey: process.env.FIREBASE_API_KEY,
-            authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-            appId: process.env.FIREBASE_APP_ID
+            apiKey: process.env.FIREBASE_API_KEY || process.env['FIREBASE_API_KEY'],
+            authDomain: process.env.FIREBASE_AUTH_DOMAIN || process.env['FIREBASE_AUTH_DOMAIN'],
+            projectId: process.env.FIREBASE_PROJECT_ID || process.env['FIREBASE_PROJECT_ID'],
+            storageBucket: process.env.FIREBASE_STORAGE_BUCKET || process.env['FIREBASE_STORAGE_BUCKET'],
+            messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || process.env['FIREBASE_MESSAGING_SENDER_ID'],
+            appId: process.env.FIREBASE_APP_ID || process.env['FIREBASE_APP_ID']
         }
     });
 });
@@ -186,7 +186,7 @@ async function callGeminiAPI(prompt, image, mode, conversationHistory, language 
     };
 
     const fetch = (await import('node-fetch')).default;
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY || process.env['GEMINI_API_KEY']}`;
 
     const geminiRes = await fetch(geminiUrl, {
         method: 'POST',
@@ -218,17 +218,17 @@ function asyncHandler(fn) {
 app.post('/api/gemini/generate', asyncHandler(async (req, res) => {
     const { prompt, image, mode, conversationHistory, seriousMode, language } = req.body;
 
-    if (!process.env.GEMINI_API_KEY) {
+    if (!(process.env.GEMINI_API_KEY || process.env['GEMINI_API_KEY'])) {
         return res.status(500).json({
             success: false,
-            error: process.env.NODE_ENV === 'development' ? 'Gemini API Key não configurada no servidor.' : 'An unexpected error occurred. Please try again later.'
+            error: (process.env.NODE_ENV === 'development' || process.env['NODE_ENV'] === 'development') ? 'Gemini API Key não configurada no servidor.' : 'An unexpected error occurred. Please try again later.'
         });
     }
 
     if (typeof prompt === 'string' && prompt.length > 5000) {
         return res.status(400).json({
             success: false,
-            error: process.env.NODE_ENV === 'development' ? 'O texto enviado excede o limite máximo de 5000 caracteres.' : 'An unexpected error occurred. Please try again later.'
+            error: (process.env.NODE_ENV === 'development' || process.env['NODE_ENV'] === 'development') ? 'O texto enviado excede o limite máximo de 5000 caracteres.' : 'An unexpected error occurred. Please try again later.'
         });
     }
 
@@ -282,7 +282,7 @@ app.get('/api/stats', (req, res) => {
 });
 
 app.post('/api/cache/clear', (req, res) => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV || process.env['NODE_ENV'] === 'development') {
         responseCache.clear();
         res.json({ success: true, message: 'Cache limpo com sucesso' });
     } else {
@@ -300,7 +300,7 @@ app.use((err, req, res, next) => {
     console.error('Internal error:', err);
     res.status(500).json({
         success: false,
-        error: process.env.NODE_ENV === 'development'
+        error: process.env.NODE_ENV || process.env['NODE_ENV'] === 'development'
             ? (err && err.message ? err.message : 'Internal server error')
             : 'An unexpected error occurred. Please try again later.'
     });
@@ -309,7 +309,7 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
     console.log(`📱 Assistente de Estudos IA - Versão 1.1.0`);
-    console.log(`🔧 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`🔧 Ambiente: ${process.env.NODE_ENV || process.env['NODE_ENV'] || 'development'}`);
     console.log(`💾 Cache configurado: ${responseCache.maxSize} itens, TTL: ${responseCache.ttl / 1000}s`);
     console.log(`⏰ Iniciado em: ${new Date().toLocaleString('pt-BR')}`);
 });
