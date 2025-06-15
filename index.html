@@ -9,8 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script src="/mathjax-config.js"></script>
+    <script src="mathjax-config.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
@@ -62,13 +61,13 @@
             <form id="email-login-form" class="space-y-4">
                 <div class="text-left">
                     <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input type="email" id="email" name="email" required
+                    <input type="email" id="email" name="email" required autocomplete="username"
                         class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="seu@email.com">
                 </div>
                 <div class="text-left">
                     <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                    <input type="password" id="password" name="password" required
+                    <input type="password" id="password" name="password" required autocomplete="current-password"
                         class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Sua senha">
                 </div>
@@ -135,13 +134,13 @@
                 </div>
                 <div class="text-left">
                     <label for="signup-email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                    <input type="email" id="signup-email" name="email" required
+                    <input type="email" id="signup-email" name="email" required autocomplete="username"
                         class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="seu@email.com">
                 </div>
                 <div class="text-left">
                     <label for="signup-password" class="block text-sm font-medium text-slate-700 mb-1">Senha</label>
-                    <input type="password" id="signup-password" name="password" required
+                    <input type="password" id="signup-password" name="password" required autocomplete="new-password"
                         class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Crie uma senha">
                 </div>
@@ -149,6 +148,7 @@
                     <label for="signup-confirm-password" class="block text-sm font-medium text-slate-700 mb-1">Confirmar
                         Senha</label>
                     <input type="password" id="signup-confirm-password" name="confirm-password" required
+                        autocomplete="new-password" aria-autocomplete="list"
                         class="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Confirme sua senha">
                 </div>
