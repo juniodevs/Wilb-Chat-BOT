@@ -2,14 +2,14 @@
   "name": "assistente-estudos-vite",
   "version": "1.0.0",
   "type": "module",
-  "main": "server/index.js",
+  "main": "index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
-    "dev:server": "node server/index.js",
+    "dev:server": "node index.js",
     "dev:client": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node server/index.js",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
