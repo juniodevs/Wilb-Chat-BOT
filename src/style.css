@@ -241,7 +241,6 @@ main, #chat-window, #history-panel {
     }
 }
 
-/* Dark Mode */
 :root {
     --background-color: #fff;
     --text-color: #1e293b;
@@ -812,4 +811,61 @@ body::-webkit-scrollbar-track, html::-webkit-scrollbar-track {
 }
 #github-link-bar a:hover img {
   transform: scale(1.12) rotate(-8deg);
+}
+
+/* MathJax: Quebra de linha sem rolagem para fórmulas grandes */
+.mjx-container {
+    max-width: 100%;
+    overflow-x: visible !important;
+    overflow-y: hidden;
+}
+
+.mjx-container.MathJax_Display {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding-bottom: 0.5em;
+    margin: 0.5em 0;
+    box-sizing: border-box;
+    overflow-x: visible !important;
+}
+
+.mjx-container span, .mjx-container mjx-math {
+    word-break: break-word;
+    white-space: normal !important;
+}
+
+/* MathJax: Fórmulas e texto menores */
+.mjx-container, .mjx-container * {
+    font-size: 0.95em !important;
+}
+
+.mjx-container.MathJax_Display {
+    font-size: 1em !important;
+}
+
+.prose, .max-w-lg {
+    font-size: 0.97em !important;
+}
+
+/* Garante que o balão de mensagem não estoure */
+.prose, .max-w-lg {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.prose .MathJax, .prose .mjx-container, .prose .mjx-chtml, .prose .mjx-svg {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    overflow-x: visible !important;
+}
+
+.max-w-lg .MathJax, .max-w-lg .mjx-container, .max-w-lg .mjx-chtml, .max-w-lg .mjx-svg {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    overflow-x: visible !important;
 }
