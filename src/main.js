@@ -358,38 +358,17 @@ function afterFirebaseInit(firebaseFns) {
         updateSendButtonState();
     };
 
-    // Função para inserir quebras de linha LaTeX em fórmulas muito longas
     function insertLatexLineBreaksKaTeX(text, maxLineLength = 15) {
-        // Quebra apenas dentro de blocos LaTeX ($$...$$ ou \[...\])
-        return text.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\])/g, (block) => {
-            // Não quebra se já houver quebras de linha
-            if (block.includes('\\') || block.includes('\\\n')) return block;
-            // Quebra linhas a cada maxLineLength caracteres, apenas fora de comandos LaTeX
-            let result = '';
-            let count = 0;
-            for (let i = 0; i < block.length; i++) {
-                result += block[i];
-                if (block[i] === ' ' || block[i] === '+' || block[i] === '-' || block[i] === '=' || block[i] === ',' || block[i] === ';') {
-                    count++;
-                }
-                if (count >= maxLineLength && block[i] !== '\\' && block[i] !== '\n') {
-                    result += ' \\ ';
-                    count = 0;
-                }
-            }
-            return result;
-        });
+        // KaTeX removed: just return the text as-is
+        return text;
     }
 
     const displayMessage = (message) => {
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex items-start gap-3 mb-6 message-appear ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`;
 
-        // Aplica quebra de linha automática em LaTeX para mensagens do assistente
+        // KaTeX removed: do not process LaTeX
         let processedText = message.text;
-        if (message.sender !== 'user' && processedText) {
-            processedText = insertLatexLineBreaksKaTeX(processedText);
-        }
 
         if (message.sender === 'user') {
             const userAvatarUrl = currentUser?.photoURL || WILB_IMAGE_URL_ANON;
@@ -410,18 +389,7 @@ function afterFirebaseInit(firebaseFns) {
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
 
-        // Renderização KaTeX automática
-        if (window.renderMathInElement) {
-            window.renderMathInElement(messageDiv, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false},
-                    {left: '\\(', right: '\\)', display: false},
-                    {left: '\\[', right: '\\]', display: true}
-                ],
-                throwOnError: false
-            });
-        }
+        // KaTeX removed: do not call renderMathInElement
     };
 
     const showTypingIndicator = () => {
