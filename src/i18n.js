@@ -55,7 +55,9 @@ function updateStaticTexts(language) {
         { selector: '#history-panel h2', key: 'history' },
         { selector: 'footer span:first-child', key: 'createdBy' },
         { selector: 'footer span:nth-child(2)', key: 'checkResponses' },
-        { selector: 'footer a:last-child', key: 'reportBug' }
+        { selector: 'footer a:last-child', key: 'reportBug' },
+        { selector: '#github-link-text', key: 'githubLink' },
+        { selector: '#github-link-text-mobile', key: 'githubLink' }
     ];
 
     elements.forEach(({ selector, key, text }) => {

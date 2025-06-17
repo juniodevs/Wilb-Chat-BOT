@@ -124,14 +124,15 @@ wilbchatbot/
 ├── src/                 # Código-fonte do frontend
 │   ├── main.js
 │   └── style.css
-├── server/              # Backend com Express.js
-│   └── index.js
+├── netlify/functions/   # Funções serverless (API)
+│   └── api.js
 ├── public/              # Arquivos estáticos
 │   └── images/
 ├── dist/                # Arquivos de build (gerados)
 ├── index.html           # Entrada principal
 ├── vite.config.js       # Configuração do Vite
 ├── package.json         # Dependências e scripts
+├── netlify.toml         # Configuração de deploy e rotas
 └── .env                 # Variáveis de ambiente
 ```
 
@@ -141,17 +142,31 @@ wilbchatbot/
 
 * `GET /api/info` – Retorna informações do sistema
 * `GET /api/config` – Retorna configurações do bot
+* `GET /api/health` – Healthcheck da API
+* `GET /api/stats` – Estatísticas do cache
+* `POST /api/gemini/generate` – Geração de resposta IA
 
 ---
 
 ## 🌐 Tecnologias Utilizadas
 
 * **Frontend**: Vite, JavaScript ES6+, Tailwind CSS, Font Awesome
-* **Backend**: Node.js, Express.js
+* **Backend/API**: Node.js, Express.js, Netlify Functions
 * **IA**: Google Gemini API
 * **Autenticação**: Firebase Auth
 * **Banco de Dados**: Firestore
 * **Build**: Vite
+* **Deploy**: Netlify (funções serverless)
+
+---
+
+## ⚙️ Observações sobre a API e Deploy
+
+- O backend agora é focado apenas em API, não servindo mais arquivos estáticos do frontend.
+- O roteamento e deploy são feitos via Netlify Functions, conforme configurado em `netlify.toml`.
+- O frontend é servido diretamente da pasta `dist` após o build.
+- As rotas da API são acessíveis via `/api/*` e o SPA é roteado corretamente para `index.html`.
+- Imports não utilizados e middlewares de arquivos estáticos foram removidos da função API para otimizar o bundle serverless.
 
 ---
 

@@ -19,6 +19,25 @@
 </head>
 
 <body class="bg-slate-100 w-screen h-screen min-h-0 min-w-0 overflow-hidden">
+    <div id="mobile-blocker" style="display:none">
+        <div
+            style="position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.98);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <img src="/images/WilbAvatar.png" alt="Wilb"
+                style="width:120px;height:120px;margin-bottom:24px;" />
+            <h1
+                style="font-size:2rem;color:#9333ea;text-align:center;margin-bottom:12px;">
+                Em breve em aparelhos Mobile
+            </h1>
+            <a href="https://github.com/juniodevs/Wilb-Chat-BOT" target="_blank" rel="noopener noreferrer"
+                style="margin-top:32px;display:flex;align-items:center;gap:10px;padding:12px 24px;border-radius:12px;background:#fff;color:#9333ea;font-weight:bold;font-size:1.1rem;box-shadow:0 4px 24px 0 rgba(147,51,234,0.10);border:2px solid #fff;text-decoration:none;transition:all 0.2s;">
+                <img src="/images/WilbMainImage.jpg" alt="Wilb"
+                    style="width:32px;height:32px;border-radius:50%;border:2px solid #9333ea;box-shadow:0 2px 8px #e9d5ff;" />
+                <span id="github-link-text-mobile">Veja o projeto no GitHub</span>
+                <i class="fa-brands fa-github" style="font-size:1.5rem;"></i>
+            </a>
+        </div>
+    </div>
+
     <div id="login-modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl text-center w-full max-w-sm message-appear relative">
             <button id="close-login-modal-btn"
@@ -335,7 +354,7 @@
                     class="bg-slate-300 text-slate-800 px-4 py-2 rounded hover:bg-slate-400 font-semibold"></button>
             </div>
         </div>
-    </div>    
+    </div>
     <script type="module" src="src/main.js"></script>
 </body>
 
