@@ -1,13 +1,10 @@
 import express from 'express';
 import serverless from 'serverless-http';
-import dotenv from 'dotenv';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
