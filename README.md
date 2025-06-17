@@ -176,6 +176,10 @@ wilbchatbot/
 
 ---
 
+## 🎨 Artes do Projeto
+
+As artes e ilustrações do WilbChatBOT foram criadas pelo meu amigo [Israel Oliveira](https://www.instagram.com/israeloliveira003/). Agradeço pela colaboração e talento!
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a [Licença MIT](LICENSE).
