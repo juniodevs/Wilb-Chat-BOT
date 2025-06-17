@@ -176,6 +176,7 @@ function afterFirebaseInit(firebaseFns) {
                 dropdownUserPhoto.src = userPhoto;
                 dropdownUserName.textContent = user.displayName || 'Usuário';
                 dropdownUserEmail.textContent = user.email || 'Não disponível';
+                dropdownUserEmail.classList.add('truncate-email');
             }
         } else {
             loginModal.style.display = 'flex';
