@@ -2,12 +2,7 @@ import express from 'express';
 import serverless from 'serverless-http';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import crypto from 'crypto';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || process.env['PORT'] || 3001;
@@ -95,8 +90,6 @@ app.use(cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-app.use(express.static(path.join(__dirname, '../dist')));
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -286,10 +279,6 @@ app.post('/api/cache/clear', (req, res) => {
     } else {
         res.status(403).json({ success: false, error: 'Operation not allowed in production.' });
     }
-});
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Centralized error-handling middleware
