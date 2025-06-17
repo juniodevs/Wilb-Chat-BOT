@@ -176,6 +176,7 @@ function afterFirebaseInit(firebaseFns) {
                 dropdownUserPhoto.src = userPhoto;
                 dropdownUserName.textContent = user.displayName || 'Usuário';
                 dropdownUserEmail.textContent = user.email || 'Não disponível';
+                dropdownUserEmail.classList.add('truncate-email');
             }
         } else {
             loginModal.style.display = 'flex';
@@ -358,9 +359,17 @@ function afterFirebaseInit(firebaseFns) {
         updateSendButtonState();
     };
 
+    function insertLatexLineBreaksKaTeX(text, maxLineLength = 15) {
+        // KaTeX removed: just return the text as-is
+        return text;
+    }
+
     const displayMessage = (message) => {
         const messageDiv = document.createElement('div');
         messageDiv.className = `flex items-start gap-3 mb-6 message-appear ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`;
+
+        // KaTeX removed: do not process LaTeX
+        let processedText = message.text;
 
         if (message.sender === 'user') {
             const userAvatarUrl = currentUser?.photoURL || WILB_IMAGE_URL_ANON;
@@ -374,18 +383,49 @@ function afterFirebaseInit(firebaseFns) {
         } else {
             messageDiv.innerHTML = `
                 <img src="${WILB_IMAGE_URL}" alt="Ícone do Wilb" class="w-10 h-10 rounded-full bg-slate-200">
-                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${DOMPurify.sanitize(marked.parse(message.text))}</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm max-w-lg prose">${DOMPurify.sanitize(marked.parse(processedText))}</div>
             `;
         }
 
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
 
-        if (window.MathJax && window.MathJax.typesetPromise) {
-            messageDiv.querySelectorAll('span.math, div.math, .MathJax').forEach(el => {
-                el.innerHTML = sanitizeLatexInput(el.innerHTML);
-            });
-            window.MathJax.typesetPromise([messageDiv]);
+        // Render KaTeX in the new message (only for bot messages)
+        if (message.sender !== 'user' && window.renderMathInElement) {
+            try {
+                renderMathInElement(messageDiv, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false,
+                    output: 'html',
+                    macros: {},
+                    renderCallback: function(elem) {
+                        // Força o bloco display KaTeX a ficar em box
+                        if (elem.classList.contains('katex-display')) {
+                            // Se já não está em um .katex-block-box, envolve
+                            if (!elem.parentElement.classList.contains('katex-block-box')) {
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'katex-block-box';
+                                elem.parentElement.insertBefore(wrapper, elem);
+                                wrapper.appendChild(elem);
+                            }
+                        }
+                    }
+                });
+                // Garante que todos os blocos KaTeX display estejam em .katex-block-box
+                messageDiv.querySelectorAll('.katex-display').forEach(elem => {
+                    if (!elem.parentElement.classList.contains('katex-block-box')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'katex-block-box';
+                        elem.parentElement.insertBefore(wrapper, elem);
+                        wrapper.appendChild(elem);
+                    }
+                });
+            } catch (e) {
+                // Silently ignore KaTeX errors
+            }
         }
     };
 
