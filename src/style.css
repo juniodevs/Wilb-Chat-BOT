@@ -785,3 +785,31 @@ body::-webkit-scrollbar-track, html::-webkit-scrollbar-track {
     background: #2d3748 !important;
     color: #fff !important;
 }
+
+#mobile-blocker { display: none; }
+@media (max-width: 600px) {
+  #mobile-blocker { display: block !important; }
+  body > *:not(#mobile-blocker) { display: none !important; }
+}
+
+#github-link-bar {
+  animation: githubBarFadeIn 1s ease;
+}
+@keyframes githubBarFadeIn {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#github-link-bar a {
+  box-shadow: 0 4px 24px 0 rgba(147,51,234,0.10);
+}
+#github-link-bar a:hover {
+  background: #f3e8ff;
+  color: #a21caf;
+  border-color: #a21caf;
+}
+#github-link-bar img {
+  transition: transform 0.2s;
+}
+#github-link-bar a:hover img {
+  transform: scale(1.12) rotate(-8deg);
+}

@@ -93,7 +93,8 @@ export const translations = {
     deleteChatTitle: "Excluir Chat",
     deleteChatMessage: "Tem certeza que deseja excluir este chat?",
     deleteChatYes: "Sim",
-    deleteChatNo: "Não"
+    deleteChatNo: "Não",
+    githubLink: "Veja o projeto no GitHub"
   },
   'en': {
     welcome: "Hi! I'm Wilb, your study companion 💜✨\nShall we rock together?",
@@ -189,6 +190,7 @@ export const translations = {
     deleteChatTitle: "Delete Chat",
     deleteChatMessage: "Are you sure you want to delete this chat?",
     deleteChatYes: "Yes",
-    deleteChatNo: "No"
+    deleteChatNo: "No",
+    githubLink: "See the project on GitHub"
   }
 };
