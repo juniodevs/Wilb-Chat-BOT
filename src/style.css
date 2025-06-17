@@ -869,3 +869,69 @@ body::-webkit-scrollbar-track, html::-webkit-scrollbar-track {
     white-space: normal !important;
     overflow-x: visible !important;
 }
+
+.katex-box {
+    display: block;
+    background: #18181b;
+    border: 1.5px solid #27272a;
+    border-radius: 0.7em;
+    margin: 1.2em 0 1.2em 0;
+    padding: 1.1em 1.5em;
+    overflow-x: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 1.18em;
+    color: #fff;
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+}
+
+.katex-box::-webkit-scrollbar {
+    height: 8px;
+}
+.katex-box::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 4px;
+}
+.katex-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.prose .katex-box { margin-top: 1.2em; margin-bottom: 1.2em; }
+
+.katex {
+    color: #fff;
+}
+
+/* Dark Mode - Elementos específicos */
+.katex-block-box {
+    display: block;
+    background: #18181b;
+    border: 1.5px solid #27272a;
+    border-radius: 0.7em;
+    margin: 1.2em 0 1.2em 0;
+    padding: 1.1em 1.5em;
+    overflow-x: auto;
+    max-width: 100%;
+    box-sizing: border-box;
+    font-size: 1.18em;
+    color: #fff;
+    font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.10);
+}
+
+.katex-block-box::-webkit-scrollbar {
+    height: 8px;
+}
+.katex-block-box::-webkit-scrollbar-thumb {
+    background: #27272a;
+    border-radius: 4px;
+}
+.katex-block-box::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.prose .katex-block-box { margin-top: 1.2em; margin-bottom: 1.2em; }
+
+.katex { color: #fff; }
+.katex-display { margin: 0 !important; width: fit-content; min-width: 200px; }

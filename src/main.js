@@ -389,7 +389,43 @@ function afterFirebaseInit(firebaseFns) {
         chatWindow.appendChild(messageDiv);
         scrollToBottom();
 
-        // KaTeX removed: do not call renderMathInElement
+        // Render KaTeX in the new message (only for bot messages)
+        if (message.sender !== 'user' && window.renderMathInElement) {
+            try {
+                renderMathInElement(messageDiv, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false,
+                    output: 'html',
+                    macros: {},
+                    renderCallback: function(elem) {
+                        // Força o bloco display KaTeX a ficar em box
+                        if (elem.classList.contains('katex-display')) {
+                            // Se já não está em um .katex-block-box, envolve
+                            if (!elem.parentElement.classList.contains('katex-block-box')) {
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'katex-block-box';
+                                elem.parentElement.insertBefore(wrapper, elem);
+                                wrapper.appendChild(elem);
+                            }
+                        }
+                    }
+                });
+                // Garante que todos os blocos KaTeX display estejam em .katex-block-box
+                messageDiv.querySelectorAll('.katex-display').forEach(elem => {
+                    if (!elem.parentElement.classList.contains('katex-block-box')) {
+                        const wrapper = document.createElement('div');
+                        wrapper.className = 'katex-block-box';
+                        elem.parentElement.insertBefore(wrapper, elem);
+                        wrapper.appendChild(elem);
+                    }
+                });
+            } catch (e) {
+                // Silently ignore KaTeX errors
+            }
+        }
     };
 
     const showTypingIndicator = () => {
