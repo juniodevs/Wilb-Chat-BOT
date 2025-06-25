@@ -29,7 +29,7 @@ Este projeto oferece uma experiência de aprendizado personalizada e interativa,
 * **Upload de imagens**: Análise de imagens pela IA
 * **Histórico persistente**: Armazenamento via Firestore ou localStorage
 
---
+---
 
 ## 🛣️ Roadmap
 
